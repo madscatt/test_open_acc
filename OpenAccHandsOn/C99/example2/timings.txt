@@ -1,0 +1,4 @@
+0 34.680000 32.370000 # first entropy / second compute-0-1
+
+2 35.060000 # solution??
+

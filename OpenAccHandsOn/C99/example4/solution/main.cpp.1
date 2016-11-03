@@ -1,0 +1,38 @@
+#include <cstdio>
+#include <cstdlib>
+using namespace std;
+
+int main() {
+  int N=100000000;
+  int HN=10000;
+  int maxv, minv;
+  
+  int *a, *h;
+  a=(int*)malloc(N*sizeof(int));
+  h=(int*)malloc(HN*sizeof(int));
+
+  for(int i=0;i<N;i++)
+    a[i]=lrand48()%HN;
+
+  #pragma acc data copyin(a[0:N]) copyout(h[0:HN])
+  {
+    #pragma acc parallel loop
+    for(int i=0;i<HN;i++) 
+      h[i]=0;
+    
+    #pragma acc parallel loop
+    for(int i=0;i<N;i++) {
+      #pragma acc atomic
+      h[a[i]]+=1;
+    }
+  }
+
+  maxv = 0;
+  minv = N;
+  for(int i=0;i<HN;i++) {
+    if (h[i]>maxv) maxv = h[i];
+    if (h[i]<minv) minv = h[i];
+  }
+  printf("%i %i %i %i %i %i %i %i\n",h[0],h[1],h[2],h[3],h[4],maxv,minv,N/HN);
+  return 0;
+}

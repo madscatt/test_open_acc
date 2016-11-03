@@ -1,0 +1,65 @@
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+using namespace std;
+
+//const unsigned int WIDTH=16384;
+//const unsigned int HEIGHT=16384;
+const unsigned int WIDTH=4096;
+const unsigned int HEIGHT=4096;
+const unsigned int MAX_ITERS=100;
+const unsigned int MAX_COLOR=255;
+const double xmin=-1.7;
+const double xmax=.5;
+const double ymin=-1.2;
+const double ymax=1.2;
+const double dx=(xmax-xmin)/WIDTH;
+const double dy=(ymax-ymin)/HEIGHT;
+
+#pragma acc routine seq
+unsigned char mandlebrot(int Px, int Py) {
+  int i;
+  double x0, y0, x, y;
+  x0=xmin+Px*dx;
+  y0=ymin+Py*dy;
+  x=0.0; y=0.0;
+  for(i=0;i<MAX_ITERS;i++) {
+    if (x*x+y*y>=4.0) break;
+    double xtemp=x*x-y*y+x0;
+    y=2*x*y+y0;
+    x=xtemp;
+  }
+  return (double)MAX_COLOR*i/MAX_ITERS;
+}
+
+int main() {
+  
+  size_t bytes=WIDTH*HEIGHT*sizeof(unsigned int);
+  unsigned char *image=(unsigned char*)malloc(bytes);
+  FILE *fp=fopen("image.pgm","wb");
+  fprintf(fp,"P5\n%s\n%d %d\n%d\n","#comment",WIDTH,HEIGHT,MAX_COLOR);
+
+  unsigned int BATCH_SIZE=8;
+  unsigned int NUM_BATCHES=HEIGHT/BATCH_SIZE;
+
+  #pragma acc data create(image[0:WIDTH*HEIGHT])
+  {
+    for(unsigned int yp=0;yp<NUM_BATCHES;yp++) {
+      unsigned int ystart=yp*BATCH_SIZE;
+      unsigned int yend=ystart+BATCH_SIZE;
+      #pragma acc parallel loop collapse(2) async(yp%2)
+      for(unsigned int y=ystart;y<yend;y++) {
+        for(unsigned int x=0;x<WIDTH;x++) {
+          image[y*WIDTH+x]=mandlebrot(x,y);
+        }
+      }
+      #pragma acc update host(image[yp*BATCH_SIZE*WIDTH:WIDTH*BATCH_SIZE]) async(yp%2)
+    }
+  }
+  
+  #pragma acc wait
+  fwrite(image,sizeof(unsigned char),WIDTH*HEIGHT,fp);
+  fclose(fp);
+  free(image);
+  return 0;
+}

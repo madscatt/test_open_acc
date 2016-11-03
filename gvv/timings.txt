@@ -1,0 +1,7 @@
+6.320000 # host, no openacc ; 1E6 atoms ; open_acc_tests_gv_host.cpp
+9.440000 # tesla:cuda8 ; one pragma around atoms ; open_acc_tests_gv_atoms_pragma.cpp
+1.250000 # tesla:cuda8 ; one pragma around outer loop ; open_acc_tests_gv_outer_loop_pragma.cpp
+10.050000 # tesla:cuda8 ; one pragma around outer loop ; open_acc_tests_gv_outer_loop_kernels_pragma.cpp
+9.960000 # tesla:cuda8 ; one pragma around outer loop ; open_acc_tests_gv_two_loop_kernels_pragma.cpp
+0.840000 # tesla:cuda8 ; one pragma around outer loop ; collapse(2) ; open_acc_tests_gv_collapse_two_loops.cpp  BUT IS THE ANSWER CORRECT??? THE I[q]/ngv is still in the loop
+

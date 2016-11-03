@@ -1,0 +1,80 @@
+10
+
+dir
+3159
+http://www.smallangles.net/sassie/svn/ncnr_development/Hailiang/LibrariesSources_Hailiang/sasmol_cpp
+http://www.smallangles.net/sassie/svn
+
+
+
+2015-04-01T15:05:58.929310Z
+1949
+hailiang
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+b27900fe-0f9a-4595-b0b1-8fa462c4af63
+
+test
+dir
+
+include
+dir
+
+lib
+dir
+
+src
+dir
+
+rigid_body
+dir
+
+cuda
+dir
+
+Makefile
+file
+
+
+
+
+2015-04-22T18:51:05.397580Z
+6d9c3983d3bfd5835fc1e31924002404
+2015-04-01T15:05:58.929310Z
+1949
+hailiang
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2025
+

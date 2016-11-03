@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<session version="1" name="timeline.pgprof" hscale="2.1015416821615396E-7">
+<expert><columnprops></columnprops>
+</expert>
+<analysis guided="true"><visitedstages><stage name="KERNELS"/><stage name="KERNELS_PERFORMANCE"/></visitedstages><visitedstages scope="KERNEL_INSTANCE" id="41"><stage name="KERNEL_INSTANCE_BOUNDS"/><stage name="KERNEL_INSTANCE_MEMORY"/><stage name="KERNEL_INSTANCE_LATENCY"/><stage name="KERNEL_INSTANCE_DIVERGENT_BRANCH"/><stage name="KERNEL_INSTANCE_SM"/><stage name="KERNEL_INSTANCE_SHARED_ACCESS"/><stage name="KERNEL_INSTANCE_UNCOALESCED_GLOBAL"/></visitedstages></analysis>
+<expertsystem current="BOUNDS"><visited><stage name="INTRO"/><stage name="BOUNDS"/><stage name="KERNELS"/></visited></expertsystem>
+<vruler width="200"/>
+<hruler>
+</hruler>
+<timelinestate>
+<timeline pathname="a.out" kind="PROCESS" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="a.out/4120733472" kind="THREAD" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="a.out/4120733472/Driver API" kind="DRIVER" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="a.out/Profiling Overhead" kind="OVERHEADS" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m" kind="DEVICE" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m/1" kind="CONTEXT" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m/1/MemCpy (HtoD)" kind="MEMCPY_HTOD" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m/1/MemCpy (DtoH)" kind="MEMCPY_DTOH" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m/1/Compute" kind="KERNELS" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m/1/Compute/_Z6calcIqPKdS0_iidi_61_gpu" kind="KERNEL" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m/1/Streams" kind="STREAMS" containerstate="OPEN_ALL" filtered="false"/>
+<timeline pathname="Tesla K20m/1/Streams/13" kind="STREAM" containerstate="OPEN_ALL" filtered="false"/>
+</timelinestate>
+<pdm>
+H4sIAAAAAAAAAH2YCUxURxiA3x4gsHLISqGcqyggyyV4pFp0xXpsaQ2IVjGpWwVFIwWr4NEqu8iN3CAoQlWMohEiWLQgaE0tbdVajzZNtTbeR7QcbVHrSd/Mv8+deZudlwzz5n3f/DPz3vD2zXByjrPmOM6Ng0NizNfOyliFy3K4ZsWnJSGp6WlS/sSOT/OWrU1eoooOD/tUxpfc+aRbNCFhSXKC9rOY6MS4MN3KlYkrdRPG6pJWp6NAUjkEVhgbOTuGe3OgstyYhA70WEGOPFVS/WPhOnJQi8uHQrnCgfakIi8gDcpD1tEeYhK9yevPAZ6cR3uITyXiuTQA/3Yv7VkR7aLU/DuUo6/SnrWof43JMLLZKRLKG0J4qM76jcC1m2jPRtS//AzgzXrasyU8FC84E/jCLbRnJ4onzQbukkN7ClE8fS7wL/Nob6goXmgB8OmFtGcvirdnK/C2ItpzIDwUW1sNPLue9hwJL4xHD3YDv9RAe04ir/4O8NB7tDeMM82XR3zqegRceb4ujPSciXihvDJcUo95lbye8pTE893Ep3Jn4Mo82htOeP/yKa8ceKpmH+W5EJ4f3+6aaOAtV49S3luEh/q3QnkM82kuxyjPlfBQX+18gO927qQ8N8JDdUbFAb+4kPbe5s/TZoWsF8YxStGFec3hbspzJ+L586kx9nvMX/zUE056HoTnwo8jamYv5m2veynPU3T/2qf0Ye57fIDyvETxes7ERqCyTy/kgudNeOiVkv8K+MeOcynPh/DW8+nkMOBuo2lPxZnmC2r38K39mP8mb6S8EaJxPHQCXrH/EOWNJLyNfGr5BniLpInyfNG9kBROEvpXLgNeMIz2RvHnoYmpCUL/fOuuYf7w9DXKG82Z/j9Q//adB66y+pPy/ETjXWwP/Lkf7fkTXgaf4uKBv/fYcxzpBRBeBB+vPMEL87me3pQ3RhQvPgD4rqDWGNILJDxXPt5HecAzOmhPTXhoHhRcAV50g/aCRF7TLeDFd2kvmPDQ89hwH7jtP7QXIhrHiPgjmB9JOUJ5oYSH5kFHJvAnFbQXRnjo2dxQf4f5shm7YklvLOFF8fdl7FLgP3vBh4LghXP0+2/xJOADkbQXIfLCo4DvmU5740Re1EzgwgeK4I03zj/0nuZ/tcy+Mdz9qtGU5zoCILfkBR7ajG4Dd6AJckte3yw95jKtnukp0wyY26YbmF7Gh5mYl8zJtOih8Wnst2CuddjCjHfwDPDus2yvbVsW5u3VWUxPHZ2N+ZwPspneHUUO5gr7HOY4ck4Arzhp2UPfVIasXMyLsnOZ3uXIPMwvT8mz6KHf0v4+4M/6LXvo6P0qH/P+tnxmPNekAsw9VhQw+zcYVIi5dUghs93XL4G/fmXZQ/dvYstWzMe3bmXGm5lShHlrahHTCxpZjPk432Kmt/ku8PJ7bM+7qQTzwOYSppesK8U8/ZNSprfKpwzzNaoyprfmAvCki2xvb0Y55of05UxvcmQF5u9MqWA+jxkvgGtesj2HzkrMlV2VTG9DehXmWeuqmN65oG2YnwrexvQy7gPPfsD2NBXVmEdWVjO9rtk10K62hunFDtmOuc5mO9N7vx34gg62dzF1B+aXVu9gz9PgWsw3htQy4z27CdzhtmUPHXENOzGP37uT6bnH1GGujq1jet3qesyvBNUzvS+uAs/8g+21pwxgHrB6gOn112xGny7cnlrILXkXYooxL55bbNFD90/XVYr5uROlzHg/TKvEPGF6JdObGlyFeU5IFeHJzDzV9QbM5fePMz2HyE7MW/+TBLG8X55aY75gUMv0ys4uQp9W3PEiQyhrHEvnl+B1i2YB5Ja83P5azJf/Xcv0Im63Y75C0Ul45v3Let6Iv8ve1RyINXkSMy9VC7ztL7YX1wc82+2gRQ/NAw8P4D4/kh49jqTQpLSFurJ56Dyxx38+a7zdT4EbEgOYnuNy4D1fQ27DGfeQfl1m3CF6ppYY+4x+sVX832un7Ti0T4T2HNA+i4ZPToJzijNt4siBDQ4O6gcHUQ57GMJeD4ohrC/RgRo0GDd4yOuojXyl+XVbYwzxdZs3/aGvoz0Xg9JUV9gTk/AtoHOJVCZ5YAx40gvWubrJkAt3wJ6IKdThJqTgst4a1qbSiWkR4jre4jrG5nM8YR26O/mJWZ0R4jrOn+PyzQ5wAxtgLUfWGS2qEyOM/Si4igvmdfyJslQmfVOn+TqsnYKftsaI66iNZbTf5SSZz9kp09ESgityNa7jXM3r2An94pOBOFchSS7YmTI0PYXniuYLmj//AzG+fUFpFQAA</pdm>
+</session>
