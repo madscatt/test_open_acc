@@ -17,6 +17,9 @@ import os
 #os.environ["ARFLAGS"] = ""
 
 #os.environ["CFLAGS"] = "-c -static -Minfo=accel -ta=multicore -O3"
+os.environ["CC"] = "/share/apps/local/bin/g++"
+os.environ["CXX"] = "/share/apps/local/bin/g++"
+os.environ["CFLAGS"] = "-Wall -O0 -g"
 
 # System imports
 from distutils.core import *
@@ -35,9 +38,13 @@ except AttributeError:
 
 # simple extension module
 pr_parallel = Extension(name="pr_parallel",sources=['./pr_parallel.c'],
-                   include_dirs = [numpy_include,'./'],
-                   #extra_link_args=['-framework', 'OpenGL', '-framework', 'GLUT'])
-                   extra_objects = ["oacc_pr.a"],
+                   include_dirs = [numpy_include,'./','/share/apps/local/git_working_copies/test_open_acc/pr/extensions'],
+                   #library_dirs = ['./','./extensions'],
+                   library_dirs = ['/share/apps/local/git_working_copies/test_open_acc/pr/extensions'],
+                   libraries = ["oacc_pr"],
+                   #libraries = ["oacc_pr.so"]
+                   #extra_link_args = ['-fPIC', '-static','-I /share/apps/local/git_working_copies/test_open_acc/pr/extensions', '-l', 'oacc_pr']
+                   extra_link_args = ['-L/share/apps/local/git_working_copies/test_open_acc/pr/extensions', '-loacc_pr', '-I oacc_pr.h']
                    )
 
 # NumyTypemapTests setup

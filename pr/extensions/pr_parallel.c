@@ -3,6 +3,8 @@
 #include "numpy/arrayobject.h"
 #include "oacc_pr.h"
 
+extern int get_distances();
+
 /*
     SASSIE  Copyright (C) 2011 Joseph E. Curtis
     This program comes with ABSOLUTELY NO WARRANTY; 
@@ -44,7 +46,7 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
 
 static PyMethodDef methods[] = {
 	{ "pr_parallel", pr_parallel, METH_VARARGS },
-	{ NULL, NULL }
+	{ NULL}
 } ;
 
 void initpr_parallel(){
