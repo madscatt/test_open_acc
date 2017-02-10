@@ -10,7 +10,14 @@ CFLAGS= -c -fast -acc -Minfo=accel -ta=tesla:cuda8,maxregcount:63 -O3
 #CFLAGS= -c -g -Mlist -Minfo=accel -ta=multicore -O3
 CFLAGS= -fPIC -c -Minfo=accel -ta=multicore -O3 -shared 
 
+#gcc -c -Wall -Werror -fPIC shared.c
+#gcc -shared -o libshared.so shared.o
+# 
+# NOTE: shared object file (linux) needs to be /share/apps/local/anaconda/lib
+# 
+
 all:
 	${CC} ${CFLAGS} oacc_pr.cpp 
+	${CC} -shared -o liboacc_pr.so oacc_pr.o
 clean:
 	rm -Rf *.so pgprof*
