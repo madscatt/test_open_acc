@@ -4,8 +4,10 @@ import pr_parallel as pr_parallel
 
 try:
     import prc as prc
+    flag = True
 except:
     print 'could not import prc'
+    flag = False
 
 def calculate_pr(pdbfile, dcdfile):
 
@@ -23,16 +25,17 @@ def calculate_pr(pdbfile, dcdfile):
     natoms = m.natoms()
     print 'natoms = ', natoms
 
-    npairs = (natoms * (natoms - 1))/2
-    all_distances = numpy.zeros(npairs, numpy.float32)
-    for i in xrange(nf): 
-        distances = prc.prc(coor[i])
-        all_distances += numpy.array(distances)
-        if i==0:
-            print 'one_distance[0] = ',distances[0]
-        print '.',
- 
-    print 'all_distances[0] = ', all_distances[0]/nf
+    if flag:
+        npairs = (natoms * (natoms - 1))/2
+        all_distances = numpy.zeros(npairs, numpy.float32)
+        for i in xrange(nf): 
+            distances = prc.prc(coor[i])
+            all_distances += numpy.array(distances)
+            if i==0:
+                print 'one_distance[0] = ',distances[0]
+            print '.',
+     
+        print 'all_distances[0] = ', all_distances[0]/nf
 
     print 'calling pr_parallel'
 

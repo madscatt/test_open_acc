@@ -37,7 +37,7 @@ except AttributeError:
     numpy_include = numpy.get_numpy_include()
 
 # simple extension module
-pr_parallel = Extension(name="pr_parallel",sources=['./pr_parallel.c'],
+pr_parallel = Extension(name="pr_parallel",sources=['./pr_parallel.cpp'],
                    include_dirs = [numpy_include,'./','/share/apps/local/git_working_copies/test_open_acc/pr/extensions'],
                    #library_dirs = ['./','./extensions'],
                    library_dirs = ['/share/apps/local/git_working_copies/test_open_acc/pr/extensions'],
