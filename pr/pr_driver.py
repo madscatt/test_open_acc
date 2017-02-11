@@ -48,6 +48,7 @@ if __name__ == "__main__":
     pdbfile = 'ten_mer.pdb'
     pdbfile = 'n.pdb'
     dcdfile = 'ten_mer.dcd'
+    #dcdfile = 'n0.dcd'
     dcdfile = 'n1.dcd'
 
     calculate_pr(pdbfile, dcdfile)

@@ -38,7 +38,7 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
 
     get_distances(c_array, nframes, natoms) ;
 
-    free(c_array) ;
+    //free(c_array) ;
 
     return Py_None ;
 

@@ -10,8 +10,7 @@ CFLAGS= -c -fast -acc -Minfo=accel -ta=tesla:cuda8,maxregcount:63 -O3
 #CFLAGS= -c -g -Mlist -Minfo=accel -ta=multicore -O3
 CFLAGS= -fPIC -c -Minfo=accel -ta=multicore -O3 -shared 
 CFLAGS= -fPIC -c -Minfo=all -ta=multicore -O3 -shared 
-#CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:cuda8,fastmath -O3
-
+#CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:cuda8,fastmath -O3 -shared
 
 #gcc -c -Wall -Werror -fPIC shared.c
 #gcc -shared -o libshared.so shared.o

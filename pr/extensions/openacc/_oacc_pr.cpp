@@ -11,7 +11,6 @@ int get_distances(double ***coor, const int nframes, const int natoms) {
     int i,j,k,d,pair,npairs ;
     double x1, y1, z1, x2, y2, z2, sdist ;
     double dx2, dy2, dz2 ;
-    //double *restrict dist[(natoms * (natoms -1))/2] ;
     double dist[(natoms * (natoms -1))/2] ;
     printf("oacc: %d\n", nframes) ;
     printf("oacc: %d\n", natoms) ;
@@ -22,20 +21,14 @@ int get_distances(double ***coor, const int nframes, const int natoms) {
         dist[d] = 0.0 ;
     }
     //#pragma acc parallel loop
-    //#pragma acc loop vector
-    #pragma acc kernels
-    #pragma acc data copyin(coor[nframes][natoms][3])
-    #pragma acc data copy(dist[npairs])
-    #pragma acc loop independent
+    #pragma acc enter data create(dist[npairs],coor[nframes][natoms][3])
     for(i=0 ; i < nframes ; i++){
         pair = 0 ;
-        #pragma acc loop independent
         for(j=0 ; j < natoms-1 ; j++){
             x1 = coor[i][j][0] ;
             y1 = coor[i][j][1] ;
             z1 = coor[i][j][2] ;
-            //#pragma acc update self(dist[npairs])
-            #pragma acc loop independent
+            #pragma acc update self(dist[npairs])
             for(k=j+1 ; k < natoms ; k++){
                 x2 = coor[i][k][0] ;
                 y2 = coor[i][k][1] ;
