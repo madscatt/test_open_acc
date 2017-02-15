@@ -40,17 +40,24 @@ def calculate_pr(pdbfile, dcdfile):
     print 'calling pr_parallel'
 
     print 'python: coor[0][0][0] = ', coor[0][0][0]
-    dum = pr_parallel.pr_parallel(coor,nf,natoms)
+    dist = pr_parallel.pr_parallel(coor,nf,natoms)
+    
+    print '\nback in python\n\n'
+    
+    outfile = open('dist.txt','w')
+    for val in dist:
+        outfile.write('%f\n' % val) 
 
+    outfile.close()
 
 if __name__ == "__main__":
 
-    pdbfile = 'ten_mer.pdb'
+    #pdbfile = 'ten_mer.pdb'
     pdbfile = 'n.pdb'
     #dcdfile = 'ten_mer.dcd'
-    dcdfile = 'n0.dcd'
-    #dcdfile = 'n1.dcd'
-    #dcdfile = 'n200.dcd'
+    #dcdfile = 'n1000.dcd'
+    #dcdfile = 'n10000.dcd'
+    dcdfile = 'n200.dcd'
 
     import time
     start_time = time.time()

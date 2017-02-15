@@ -2,8 +2,10 @@
 #include "Python.h"
 #include "numpy/arrayobject.h"
 #include "oacc_pr.h"
+#include <vector> 
+using namespace std;
 
-extern int get_distances();
+extern void get_distances();
 
 /*
     SASSIE  Copyright (C) 2011 Joseph E. Curtis
@@ -12,8 +14,10 @@ extern int get_distances();
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
+
 PyObject *pr_parallel(PyObject *self, PyObject *args){
 	PyObject *array = NULL ;
+    PyObject *pylist, *item ;
     
     int nframes, natoms ;
 
@@ -21,6 +25,10 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
         return NULL;
 
     double ***c_array;
+    unsigned long long int npairs ;
+    npairs = (natoms * (natoms - 1))/2 ;
+    double dist[(natoms * (natoms -1))/2] ;
+    //std:vector<double> dist(npairs, 0.0) ;
 
     //Create C arrays from numpy objects:
     int typenum = NPY_DOUBLE;
@@ -34,13 +42,26 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
 
     printf("c : nframes = %d\n", nframes);
     printf("c : natoms = %d\n", natoms);
-    printf("c : %f. \n", c_array[0][0][0]);
+    printf("c : %f \n", c_array[0][0][0]);
 
-    get_distances(c_array, nframes, natoms) ;
+    get_distances(c_array, nframes, natoms, dist) ;
 
-    //free(c_array) ;
+    //for(int i=0 ; i < 30 ; i++){
+     //   printf("dist[%i] = %f\n", i,dist[i]/double(nframes)) ;
+   // } 
 
-    return Py_None ;
+    pylist = PyList_New(npairs) ;
+    if (pylist != NULL){
+        for (unsigned long long int i=0 ; i<npairs ; i++) {
+            item = PyFloat_FromDouble(dist[i]/double(nframes));
+            PyList_SET_ITEM(pylist, i, item);
+        }
+    }
+
+    //free dist ;
+
+    return pylist ;
+   // return Py_None ;
 
 }
 

@@ -6,31 +6,21 @@
 #include <ctime>
 #include "oacc_pr.h"
 
-int get_distances(double ***coor, const int nframes, const int natoms) {
+void get_distances(double ***coor, const int nframes, const int natoms, double *dist) {
 
     int i,j,k ;
-    unsigned long long d, npairs ;
-    //int d, npairs ;
+    unsigned long long npairs ;
     double x1, y1, z1, x2, y2, z2, sdist ;
     double dx2, dy2, dz2 ;
-    //double *restrict dist[(natoms * (natoms -1))/2] ;
-    double dist[(natoms * (natoms -1))/2] ;
-    //int count[(natoms * (natoms -1))/2] ;
-    //int count_pairs ;
     unsigned long long local_count ; 
-    //int local_count ; 
 
+    /// temporary printing for debuggin
+    
     printf("oacc: %d\n", nframes) ;
     printf("oacc: %d\n", natoms) ;
     printf("oacc: coor[0][0][0] = %f\n", coor[0][0][0]) ;
     npairs = (natoms * (natoms - 1))/2 ;
 
-    //count_pairs = 0 ; 
-
-    for(d=0 ; d < npairs ; d++) {
-        dist[d] = 0.0 ;
-       // count[d] = 0 ;
-    }
     #pragma acc data copyin(coor[nframes][natoms][3]) copy(dist[npairs])
     {
     for(i=0 ; i < nframes ; i++){
@@ -52,35 +42,12 @@ int get_distances(double ***coor, const int nframes, const int natoms) {
                 sdist = sqrt(dx2 + dy2 + dz2) ;
                 local_count = ((j*natoms)-((j*(j+1))/2))+k-(j+1) ;
                 dist[local_count] += sdist ; 
-        //        count[local_count] += 1 ; 
-                //if(i==0 && j<2){ 
-                //if(i==0){
-                 //   printf("%i\t%i\t%i\t%i\ttdist[c] = %f\n", i,j,k,local_count,dist[local_count]) ;
-    //           }
-               // count_pairs++;
-            }
-            }
-        //if(i==0) printf("\n") ;
-        }
-        }
-    }
-    }
+            } // end of k-loop
+            } // end of pragma acc loop
+        } // end of j-loop
+        } // end of pragma acc parallel loop
+    } // end of i-loop
+    } // end of pragma acc data 
 
-    //for(i=0 ; i < 30 ; i++){
-     //   printf("dist[%i] = %f\n", i,dist[i]/double(nframes)) ;
-     ////   printf("dist[%i] = %f\n", i,dist[i]/double(count[i]+1)) ;
-    //} 
-
-    //for(i=0 ; i < npairs ; i++){
-     //   printf("count[%i] = %i\n", i,count[i]) ;
-      //  //printf("count[%i] = %f\n", i,count[i]/double(nframes)) ;
-   // }
-
-    //printf("count_pairs = %i\n", count_pairs) ;
-    //printf("npairs * nframes = %llu\n", npairs*nframes) ;
-    printf("npairs * nframes = %i\n", npairs*nframes) ;
-
-    //delete [] dist ;
-
-    return 0 ;
+    return ;
 }
