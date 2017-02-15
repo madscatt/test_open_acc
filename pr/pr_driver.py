@@ -48,8 +48,15 @@ if __name__ == "__main__":
     pdbfile = 'ten_mer.pdb'
     pdbfile = 'n.pdb'
     #dcdfile = 'ten_mer.dcd'
-    #dcdfile = 'n0.dcd'
-    dcdfile = 'n1.dcd'
+    dcdfile = 'n0.dcd'
+    #dcdfile = 'n1.dcd'
     #dcdfile = 'n200.dcd'
 
+    import time
+    start_time = time.time()
     calculate_pr(pdbfile, dcdfile)
+    elapsed_time = time.time() - start_time
+    print 'elapsed time = ', elapsed_time
+    nframes = 1000
+    print 'seconds per frame (1000) = ', elapsed_time/nframes
+

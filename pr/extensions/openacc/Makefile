@@ -11,6 +11,7 @@ CC=/share/apps/local/pgi/linux86-64/2016/bin/pgc++
 #CFLAGS= -fPIC -c -Minfo=accel -ta=multicore -O3 -shared 
 #CFLAGS= -fPIC -c -Minfo=all -ta=multicore -O3 -shared 
 CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:cuda8,fastmath -O3 -shared
+CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:nordc,fastmath -O3 -shared
 #CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=multicore -O3 -shared
 
 #CC=g++
@@ -26,7 +27,8 @@ DEST=/share/apps/local/anaconda/lib
 all:
 	${CC} ${CFLAGS} oacc_pr.cpp 
 	${CC} -shared -o liboacc_pr.so oacc_pr.o
+	ar -cvq liboacc_pr.a oacc_pr.o
 clean:
 	rm -Rf *.o *.so pgprof*
 install:
-	cp liboacc_pr.so ${DEST}
+	cp liboacc_pr.so liboacc_pr.a ${DEST}
