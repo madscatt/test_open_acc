@@ -31,7 +31,7 @@ pr_parallel = Extension(name="pr_parallel",sources=['./pr_parallel.cpp'],
                    library_dirs = ['/share/apps/local/git_working_copies/test_open_acc/pr/extensions','/share/apps/local/pgi/linux86-64/16.10/lib/','/share/apps/local/pgi/16.10/share_objects/lib64/','/state/partition1/apps/local/pgi/linux86-64/16.10/lib/','/usr/lib/gcc/x86_64-redhat-linux/4.4.7/'],
                    libraries = ["oacc_pr","accapi", "accg", "accn", "accg2", "dl", "cudadevice", "pgmp", "numa", "pthread", "nspgc", "pgc", "m", "gcc", "c", "gcc"] 
                    #libraries = ["oacc_pr"],
-                   #extra_compile_args = ["-L/state/partition1/apps/local/pgi/linux86-64/16.10/lib/ -laccapi -laccg -laccn -laccg2 -ldl -lcudadevice -lpgmp -lnuma -lpthread -lnspgc -lpgc -lm -lgcc -lc"]
+                   #extra_compile_args = ["-c++11"]
                    )
 
 # NumyTypemapTests setup

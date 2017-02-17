@@ -6,20 +6,43 @@
 #include <ctime>
 #include "oacc_pr.h"
 
-void get_distances(double ***coor, const int nframes, const int natoms, double *dist) {
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+
+#include <typeinfo>
+
+using namespace std;
+
+void get_distances(double ***coor, const int nframes, const int natoms, std::vector<int>& hist, const int nbins, const double bin_width) {
+//void get_distances(double ***coor, const int nframes, const int natoms, std::vector<double>& dist) {
+//void get_distances(double ***coor, const int nframes, const int natoms, double* dist) {
 
     int i,j,k ;
     unsigned long long npairs ;
     double x1, y1, z1, x2, y2, z2, sdist ;
     double dx2, dy2, dz2 ;
     unsigned long long local_count ; 
+    unsigned long long z ; 
 
-    /// temporary printing for debuggin
+    /// temporary printing for debugging
+    //
+    //
+    std::ostringstream sstream;
+    std::string remark = "#hello";
+    const std::string filename = "dum_oacc.txt";
     
+    std::ofstream outfile(filename.c_str()) ;
+    outfile << remark << std::endl;
+
+    //
+   
     printf("oacc: %d\n", nframes) ;
     printf("oacc: %d\n", natoms) ;
     printf("oacc: coor[0][0][0] = %f\n", coor[0][0][0]) ;
     npairs = (natoms * (natoms - 1))/2 ;
+    double dist[npairs] ;
 
     #pragma acc data copyin(coor[nframes][natoms][3]) copy(dist[npairs])
     {
@@ -48,6 +71,57 @@ void get_distances(double ***coor, const int nframes, const int natoms, double *
         } // end of pragma acc parallel loop
     } // end of i-loop
     } // end of pragma acc data 
+
+    double this_low_bin, this_high_bin ;
+    //std::vector<int> hist(nbins,0);
+
+    std::cout << "creating histogram" << std::endl ;
+
+    //#pragma acc data copyin(dist[npairs]) copy(hist[nbins])
+    //#pragma acc parallel loop
+    for(z=0 ; z < npairs ; z++){
+        //#pragma acc for private(this_low_bin, this_high_bin)
+        for(i=0 ; i < nbins ; i++){
+            this_low_bin = double(i)*bin_width ;
+            this_high_bin = this_low_bin + bin_width ;
+            if(dist[z]/double(nframes) > this_low_bin && dist[z]/double(nframes) <= this_high_bin){
+                hist[i] += 1 ;
+                break ;
+            }
+        }
+    }
+
+    //for(i=0 ; i < nbins ; i++){
+     //   std::cout << hist[i] << std::endl ;
+    //}
+    std::cout << "leaving oacc" << std::endl ;
+
+/*
+    std::cout << typeid(coor[0][0][0]).name() << '\n';
+    std::cout << typeid(x1).name() << '\n';
+    std::cout << typeid(sdist).name() << '\n';
+    std::cout << typeid(dist[0]).name() << '\n';
+
+    std::cout << "local count = " << local_count << std::endl ; 
+    std::cout << "local count + 1 = " << local_count + 1 << std::endl ; 
+    std::cout << "lc = " << lc << std::endl ; 
+    std::cout << "npairs = " << npairs << std::endl ; 
+    printf("lc = %llu\n", lc) ;
+
+    //for(i=0; i < nframes ; i++){
+     //for(j=0; j < natoms ; j++){
+      //  printf("%f\t%f\t%f\n", coor[i][j][0],coor[i][j][1],coor[i][j][2]);
+     //}
+   // }
+    for (z=0 ; z<npairs ; z++) {
+     //   if(double(nframes) != 0.0){
+            printf("%f\n", dist[z]/double(nframes));
+      //      printf("%f\n", dist[z]/double(nframes)) ;
+     //   }
+        //sstream << dist[z]/double(nframes) << endl;
+    }
+    //outfile << sstream ;
+ */     
 
     return ;
 }

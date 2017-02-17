@@ -3,6 +3,15 @@
 #include "numpy/arrayobject.h"
 #include "oacc_pr.h"
 #include <vector> 
+
+#include <string>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+
+
 using namespace std;
 
 extern void get_distances();
@@ -18,18 +27,27 @@ extern void get_distances();
 PyObject *pr_parallel(PyObject *self, PyObject *args){
 	PyObject *array = NULL ;
     PyObject *pylist, *item ;
-    
-    int nframes, natoms ;
 
-    if (!PyArg_ParseTuple(args, "Oii", &array, &nframes, &natoms))
+    std::ostringstream sstream;
+    std::string remark = "#hello";
+    const std::string filename = "dum.txt"; 
+
+    std::ofstream outfile(filename.c_str()) ;
+    outfile << remark << std::endl;
+     
+    int nframes, natoms, nbins ;
+    double bin_width ;
+
+    if (!PyArg_ParseTuple(args, "Oiiid", &array, &nframes, &natoms, &nbins, &bin_width))
         return NULL;
+
+    std::cout << "c: nbins = " << nbins << std::endl ; 
+    std::cout << "c: bin_width = " << bin_width << std::endl ; 
 
     double ***c_array;
     unsigned long long int npairs ;
-    npairs = (natoms * (natoms - 1))/2 ;
-    double dist[(natoms * (natoms -1))/2] ;
-    //std:vector<double> dist(npairs, 0.0) ;
-
+    //std::vector<double> dist(npairs, 0.0) ;
+    std::vector<int> hist(nbins, 0) ;
     //Create C arrays from numpy objects:
     int typenum = NPY_DOUBLE;
     PyArray_Descr *descr;
@@ -44,19 +62,21 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
     printf("c : natoms = %d\n", natoms);
     printf("c : %f \n", c_array[0][0][0]);
 
-    get_distances(c_array, nframes, natoms, dist) ;
+    get_distances(c_array, nframes, natoms, hist, nbins, bin_width) ;
 
-    //for(int i=0 ; i < 30 ; i++){
-     //   printf("dist[%i] = %f\n", i,dist[i]/double(nframes)) ;
-   // } 
-
-    pylist = PyList_New(npairs) ;
+    //pylist = PyList_New(npairs) ;
+    pylist = PyList_New(nbins) ;
     if (pylist != NULL){
-        for (unsigned long long int i=0 ; i<npairs ; i++) {
-            item = PyFloat_FromDouble(dist[i]/double(nframes));
-            PyList_SET_ITEM(pylist, i, item);
+        for (int i=0 ; i<nbins ; i++) {
+            sstream << hist[i] << endl;
+            //std::string value = sstream.str();
+            item = PyInt_FromLong(hist[i]);
+            //item = PyFloat_FromDouble(hist[i]);
+            //PyList_SET_ITEM(pylist, i, item);
+            PyList_SetItem(pylist, i, item);
         }
     }
+    outfile << sstream.str() ;
 
     //free dist ;
 
