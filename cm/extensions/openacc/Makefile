@@ -26,10 +26,10 @@ CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:nordc,fastmath -O3 -shared
 DEST=/share/apps/local/anaconda/lib
 
 all:
-	${CC} ${CFLAGS} oacc_pr.cpp 
-	${CC} -shared -o liboacc_pr.so oacc_pr.o
-	ar -cvq liboacc_pr.a oacc_pr.o
+	${CC} ${CFLAGS} oacc_cm.cpp 
+	${CC} -shared -o liboacc_cm.so oacc_cm.o
+	ar -cvq liboacc_cm.a oacc_cm.o
 clean:
 	rm -Rf *.o *.so pgprof*
 install:
-	cp liboacc_pr.so liboacc_pr.a ${DEST}
+	cp liboacc_cm.so liboacc_cm.a ${DEST}

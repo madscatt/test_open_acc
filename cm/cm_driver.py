@@ -23,7 +23,22 @@ def get_number_of_bins_from_structure(m, input_nbins):
 
     return nbins
 
-def calculate_cm(pdbfile, dcdfile, input_nbins, bin_width):
+def get_domains(m, basis_1, basis_2):
+
+    frame = 0
+
+    error, domain_1_mask = m.get_subset_mask(basis_1)
+    error, domain_2_mask = m.get_subset_mask(basis_2)
+
+    domain_1_mol = sasmol.SasMol(0)
+    domain_2_mol = sasmol.SasMol(0)
+
+    error = m.copy_molecule_using_mask(domain_1_mol,domain_1_mask,frame) 
+    error = m.copy_molecule_using_mask(domain_2_mol,domain_2_mask,frame) 
+
+    return domain_1_mask, domain_2_mask, domain_1_mol, domain_2_mol
+
+def calculate_cm(pdbfile, dcdfile, input_nbins, bin_width, basis_1, basis_2):
 
     m = sasmol.SasMol(0)
     m.read_pdb(pdbfile)
@@ -37,62 +52,60 @@ def calculate_cm(pdbfile, dcdfile, input_nbins, bin_width):
     print 'nf = ', nf
 
     coor = m.coor()
-    print 'coor[0][0] = ', coor[0][0]
-    print 'coor[0][-1] = ', coor[0][-1]
-
     natoms = m.natoms()
-    print 'natoms = ', natoms
 
-    if flag:
-        npairs = (natoms * (natoms - 1))/2
-        all_distances = numpy.zeros(npairs, numpy.float32)
-        for i in xrange(nf): 
-            distances = prc.prc(coor[i])
-            all_distances += numpy.array(distances)
-            if i==0:
-                print 'one_distance[0] = ',distances[0]
-            print '.',
-     
-        print 'all_distances[0] = ', all_distances[0]/nf
+    domain_1_mask, domain_2_mask, domain_1_mol, domain_2_mol = get_domains(m, basis_1, basis_2)
 
+    coor_1 = domain_1_mol.coor()
+    coor_2 = domain_2_mol.coor()
+    
+    natoms_1 = domain_1_mol.natoms()
+    natoms_2 = domain_2_mol.natoms()
+
+    print 'natoms_1 = ', natoms_1
+    print 'natoms_2 = ', natoms_2
+
+    print 'python: coor_1[0][0][0] = ', coor_1[0][0][0]
+    print 'python: coor_2[0][0][0] = ', coor_2[0][0][0]
 
     sys.exit()
 
     print 'calling cm_parallel'
-
-    print 'python: coor[0][0][0] = ', coor[0][0][0]
+    #dist = cm_parallel.cm_parallel(coor_1,coor_2,nf,natoms_1,natoms_2,nbins,bin_width)
     #dist = cm_parallel.cm_parallel(coor,nf,natoms,nbins,bin_width)
     
     print '\nback in python\n\n'
     
-    outfile = open('dist.txt','w')
-    for val in dist:
-        outfile.write('%f\n' % val) 
+    #outfile = open('dist.txt','w')
+    #for val in dist:
+    #    outfile.write('%f\n' % val) 
+#
+#    outfile.close()
 
-    outfile.close()
 
 if __name__ == "__main__":
 
-    nbins = 200
+    input_nbins = 200
     bin_width = 1.0
 
-    #pdbfile = 'ten_mer.pdb'
-    #pdbfile = 'n.pdb'
     pdbfile = 'nist_mab.pdb'
     
-    #dcdfile = 'ten_mer.dcd'
-    #dcdfile = 'ten_mer_4591.dcd'
-    #dcdfile = 'n1000.dcd'
-    #dcdfile = 'n10000.dcd'
-    #dcdfile = 'n200.dcd'
-    dcdfile = 'xray_x2_lt_55.dcd'
+    dcdfile = 'nist_mab_10_frames.dcd'
+    #dcdfile = 'xray_x2_lt_55.dcd'
 
-
+    basis_1 = '(name[i][0] != "H") and (segname[i] == "HC1" and resid[i] < 219) or (segname[i] == "LC1")' # fab_1
+    basis_2 = '(name[i][0] != "H") and (segname[i] == "HC2" and resid[i] < 219) or (segname[i] == "LC2")' # fab_2
     
+    basis_2 = '(name[i][0] != "H") and (segname[i] == "HC1" and resid[i] > 233) or (segname[i] == "HC2" \
+                   and resid[i] > 233) or (segname[i][:3] == "SUG")'               # fc
 
+    #basis_2 = '(name[i][0] != "H") and (segname[i] == "HC1" and resid[i] < 219) or (segname[i] == "HC1" and resid[i] > 233)' # heavy chain 1 no sugar
+    
     import time
     start_time = time.time()
-    calculate_cm(pdbfile, dcdfile, nbins, bin_width)
+
+    calculate_cm(pdbfile, dcdfile, input_nbins, bin_width, basis_1, basis_2)
+
     elapsed_time = time.time() - start_time
     print 'elapsed time = ', elapsed_time
     nframes = 1000
