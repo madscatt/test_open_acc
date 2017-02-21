@@ -1,7 +1,7 @@
 #include <math.h>
 #include "Python.h"
 #include "numpy/arrayobject.h"
-#include "oacc_pr.h"
+//#include "oacc_pr.h"
 #include <vector> 
 
 #include <string>
@@ -24,8 +24,9 @@ extern void get_distances();
 */
 
 
-PyObject *pr_parallel(PyObject *self, PyObject *args){
-	PyObject *array = NULL ;
+PyObject *cm_parallel(PyObject *self, PyObject *args){
+	PyObject *array_1 = NULL ;
+	PyObject *array_2 = NULL ;
     PyObject *pylist, *item ;
 
     std::ostringstream sstream;
@@ -35,33 +36,47 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
     std::ofstream outfile(filename.c_str()) ;
     outfile << remark << std::endl;
      
-    int nframes, natoms, nbins ;
+    int nframes, natoms_1, natoms_2, nbins ;
     double bin_width ;
+    double cutoff ;
 
-    if (!PyArg_ParseTuple(args, "Oiiid", &array, &nframes, &natoms, &nbins, &bin_width))
+    if (!PyArg_ParseTuple(args, "OOiiiidd", &array_1, &array_2, &nframes, &natoms_1, &natoms_2, &nbins, &bin_width, &cutoff))
         return NULL;
 
     std::cout << "c: nbins = " << nbins << std::endl ; 
     std::cout << "c: bin_width = " << bin_width << std::endl ; 
 
-    double ***c_array;
+    double ***c_array_1;
+    double ***c_array_2;
+
     unsigned long long int npairs ;
     //std::vector<double> dist(npairs, 0.0) ;
     std::vector<int> hist(nbins, 0) ;
+
+
     //Create C arrays from numpy objects:
     int typenum = NPY_DOUBLE;
     PyArray_Descr *descr;
     descr = PyArray_DescrFromType(typenum);
     npy_intp dims[3];
-    if (PyArray_AsCArray(&array, (void ***)&c_array, dims, 3, descr) < 0) {
+
+    if (PyArray_AsCArray(&array_1, (void ***)&c_array_1, dims, 3, descr) < 0) {
+        PyErr_SetString(PyExc_TypeError, "error converting to c array");
+        return NULL;
+    }
+    
+    if (PyArray_AsCArray(&array_2, (void ***)&c_array_2, dims, 3, descr) < 0) {
         PyErr_SetString(PyExc_TypeError, "error converting to c array");
         return NULL;
     }
 
     printf("c : nframes = %d\n", nframes);
-    printf("c : natoms = %d\n", natoms);
-    printf("c : %f \n", c_array[0][0][0]);
-
+    printf("c : natoms_1 = %d\n", natoms_1);
+    printf("c : natoms_2 = %d\n", natoms_2);
+    printf("c : %f \n", c_array_1[0][0][0]);
+    printf("c : %f \n", c_array_2[0][0][0]);
+    printf("c : cutoff = %f \n", cutoff);
+/*
     get_distances(c_array, nframes, natoms, hist, nbins, bin_width) ;
 
     //pylist = PyList_New(npairs) ;
@@ -81,18 +96,19 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
     //free dist ;
 
     return pylist ;
-   // return Py_None ;
+ */
+    return Py_None ;
 
 }
 
 static PyMethodDef methods[] = {
-	{ "pr_parallel", pr_parallel, METH_VARARGS },
+	{ "cm_parallel", cm_parallel, METH_VARARGS },
 	{ NULL}
 } ;
 
-extern "C" void initpr_parallel(){
+extern "C" void initcm_parallel(){
 	PyObject *m ;
-	m = Py_InitModule("pr_parallel", methods);
+	m = Py_InitModule("cm_parallel", methods);
 	import_array();
 }
 

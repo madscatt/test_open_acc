@@ -1,6 +1,6 @@
 import sasmol.sasmol as sasmol
 import numpy
-#import cm_parallel as cm_parallel
+import cm_parallel as cm_parallel
 import math
 import sys
 
@@ -38,7 +38,7 @@ def get_domains(m, basis_1, basis_2):
 
     return domain_1_mask, domain_2_mask, domain_1_mol, domain_2_mol
 
-def calculate_cm(pdbfile, dcdfile, input_nbins, bin_width, basis_1, basis_2):
+def calculate_cm(pdbfile, dcdfile, input_nbins, bin_width, basis_1, basis_2, cutoff):
 
     m = sasmol.SasMol(0)
     m.read_pdb(pdbfile)
@@ -68,10 +68,8 @@ def calculate_cm(pdbfile, dcdfile, input_nbins, bin_width, basis_1, basis_2):
     print 'python: coor_1[0][0][0] = ', coor_1[0][0][0]
     print 'python: coor_2[0][0][0] = ', coor_2[0][0][0]
 
-    sys.exit()
-
     print 'calling cm_parallel'
-    #dist = cm_parallel.cm_parallel(coor_1,coor_2,nf,natoms_1,natoms_2,nbins,bin_width)
+    dist = cm_parallel.cm_parallel(coor_1,coor_2,nf,natoms_1,natoms_2,nbins,bin_width,cutoff)
     #dist = cm_parallel.cm_parallel(coor,nf,natoms,nbins,bin_width)
     
     print '\nback in python\n\n'
@@ -87,6 +85,8 @@ if __name__ == "__main__":
 
     input_nbins = 200
     bin_width = 1.0
+
+    cutoff = 4.0 
 
     pdbfile = 'nist_mab.pdb'
     
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     import time
     start_time = time.time()
 
-    calculate_cm(pdbfile, dcdfile, input_nbins, bin_width, basis_1, basis_2)
+    calculate_cm(pdbfile, dcdfile, input_nbins, bin_width, basis_1, basis_2, cutoff)
 
     elapsed_time = time.time() - start_time
     print 'elapsed time = ', elapsed_time
