@@ -43,16 +43,8 @@ void get_distances(double ***coor, const int nframes, const int natoms, std::vec
     printf("oacc: coor[0][0][0] = %f\n", coor[0][0][0]) ;
     npairs = (natoms * (natoms - 1))/2 ;
     double dist[npairs] ;
-    double local_dist[nframes*npairs] ;
 
-    std::cout << "zeroing local_dist array" << std::endl ; 
-
-    for(i=0; i < nframes*npairs ; i++){
-            local_dist[i] = 0.0 ;
-    }
-
-    std::cout << "starting parallel loops" << std::endl ; 
-    #pragma acc data copyin(coor[nframes][natoms][3]) copy(dist[npairs], local_dist[nframes*npairs])
+    #pragma acc data copyin(coor[nframes][natoms][3]) copy(dist[npairs])
     {
     for(i=0 ; i < nframes ; i++){
         #pragma acc parallel loop
@@ -73,7 +65,6 @@ void get_distances(double ***coor, const int nframes, const int natoms, std::vec
                 sdist = sqrt(dx2 + dy2 + dz2) ;
                 local_count = ((j*natoms)-((j*(j+1))/2))+k-(j+1) ;
                 dist[local_count] += sdist ; 
-                local_dist[(i * npairs) + local_count] += sdist ; 
             } // end of k-loop
             } // end of pragma acc loop
         } // end of j-loop
