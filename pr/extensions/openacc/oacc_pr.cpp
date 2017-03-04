@@ -45,13 +45,17 @@ void get_distances(double ***coor, const int nframes, const int natoms, std::vec
     double dist[npairs] ;
     double local_dist[nframes*npairs] ;
 
-    std::cout << "zeroing local_dist array" << std::endl ; 
+    std::cout << "zero-ing local_dist array" << std::endl ; 
+    std::cout << "nf * np = " << nframes * npairs << std::endl ;
+    std::cout << "nf = " << nframes << std::endl ;
+    std::cout << "np = " << npairs << std::endl ;
 
-    for(i=0; i < nframes*npairs ; i++){
-            local_dist[i] = 0.0 ;
+    for(z=0; z < nframes*npairs ; z++){
+        //std::cout << z << std::flush ; 
+        //local_dist[z] = 0.0 ;
     }
 
-    std::cout << "starting parallel loops" << std::endl ; 
+    std::cout << "starting parallel loops" << std::flush ; //std::endl ; 
     #pragma acc data copyin(coor[nframes][natoms][3]) copy(dist[npairs], local_dist[nframes*npairs])
     {
     for(i=0 ; i < nframes ; i++){
@@ -84,21 +88,41 @@ void get_distances(double ***coor, const int nframes, const int natoms, std::vec
     double this_low_bin, this_high_bin ;
     //std::vector<int> hist(nbins,0);
 
-    std::cout << "creating histogram" << std::endl ;
-
-    //#pragma acc data copyin(dist[npairs]) copy(hist[nbins])
-    //#pragma acc parallel loop
-    for(z=0 ; z < npairs ; z++){
-        //#pragma acc for private(this_low_bin, this_high_bin)
-        for(i=0 ; i < nbins ; i++){
-            this_low_bin = double(i)*bin_width ;
-            this_high_bin = this_low_bin + bin_width ;
-            if(dist[z]/double(nframes) > this_low_bin && dist[z]/double(nframes) <= this_high_bin){
-                hist[i] += 1 ;
-                break ;
+    std::cout << "creating histogram: 1" << std::endl ;
+    for(i=0 ; i < nframes ; i++){
+    
+        for(j=0 ; j < npairs ; j++){
+            z = (i * npairs) + j ;
+            for(k=0 ; k < nbins ; k++){
+                this_low_bin = double(k)*bin_width ;
+                this_high_bin = this_low_bin + bin_width ;
+                if(local_dist[z] > this_low_bin && local_dist[z] <= this_high_bin){
+                    hist[k] += 1 ;
+                    break ;
+                }
             }
         }
     }
+
+    for(k=0 ; k < nbins ; k++){
+        hist[k] /= double(nframes) ;
+    }
+
+//    std::cout << "creating histogram: 2" << std::endl ;
+
+ //   //#pragma acc data copyin(dist[npairs]) copy(hist[nbins])
+//    //#pragma acc parallel loop
+ //   for(z=0 ; z < npairs ; z++){
+  //      //#pragma acc for private(this_low_bin, this_high_bin)
+   //     for(i=0 ; i < nbins ; i++){
+    //        this_low_bin = double(i)*bin_width ;
+     //       this_high_bin = this_low_bin + bin_width ;
+      //      if(dist[z]/double(nframes) > this_low_bin && dist[z]/double(nframes) <= this_high_bin){
+       //         hist[i] += 1 ;
+        //        break ;
+         //   }
+        //}
+    //}
 
     //for(i=0 ; i < nbins ; i++){
      //   std::cout << hist[i] << std::endl ;

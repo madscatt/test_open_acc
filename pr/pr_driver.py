@@ -80,15 +80,15 @@ if __name__ == "__main__":
     nbins = 200
     bin_width = 1.0
 
-    #pdbfile = 'ten_mer.pdb'
+    pdbfile = 'ten_mer.pdb'
     #pdbfile = 'n.pdb'
     pdbfile = 'nist_mab.pdb'
     
-    #dcdfile = 'ten_mer.dcd'
+    dcdfile = 'ten_mer.dcd'
     #dcdfile = 'ten_mer_4591.dcd'
+    #dcdfile = 'n200.dcd'
     #dcdfile = 'n1000.dcd'
     #dcdfile = 'n10000.dcd'
-    #dcdfile = 'n200.dcd'
     dcdfile = 'xray_x2_lt_55.dcd'
 
     import time
