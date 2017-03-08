@@ -11,7 +11,7 @@ CC=/share/apps/local/pgi/linux86-64/2016/bin/pgc++
 #CFLAGS= -fPIC -c -Minfo=accel -ta=multicore -O3 -shared 
 #CFLAGS= -fPIC -c -Minfo=all -ta=multicore -O3 -shared 
 CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:cuda8,fastmath -O3 -shared
-CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:nordc,fastmath -O3 -shared
+#CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=tesla:nordc,fastmath -O3 -shared
 #CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=multicore -O3 -shared
 CFLAGS= -fPIC -c -fast -acc -Minfo=accel -ta=multicore -O3 -shared 
 
