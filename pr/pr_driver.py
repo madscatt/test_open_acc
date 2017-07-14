@@ -69,9 +69,11 @@ def calculate_pr(pdbfile, dcdfile, input_nbins, bin_width):
     
     print '\nback in python\n\n'
     
-    outfile = open('dist.txt','w')
-    for val in dist:
-        outfile.write('%f\n' % val) 
+    outfile = open('final_python_dist.txt','w')
+    #for val in dist:
+    for i in xrange(nf):
+        for j in xrange(nbins):
+            outfile.write('%i\t%d\n' % (j, dist[i][j])) 
 
     outfile.close()
 
@@ -82,14 +84,18 @@ if __name__ == "__main__":
 
     pdbfile = 'ten_mer.pdb'
     #pdbfile = 'n.pdb'
-    pdbfile = 'nist_mab.pdb'
-    
+    #pdbfile = 'nist_mab.pdb'
+    #pdbfile = 'bent_fg_from_constrained_md.pdb'
+    pdbfile = 'backbone_bent_fg.pdb'
+ 
     dcdfile = 'ten_mer.dcd'
-    #dcdfile = 'ten_mer_4591.dcd'
+    dcdfile = 'ten_mer_4591.dcd'
     #dcdfile = 'n200.dcd'
     #dcdfile = 'n1000.dcd'
     #dcdfile = 'n10000.dcd'
-    dcdfile = 'xray_x2_lt_55.dcd'
+    #dcdfile = 'xray_x2_lt_55.dcd'
+    #dcdfile = 'cdyn0.dcd'
+    dcdfile = 'backbone_bent_fg_cdyn0.dcd'
 
     import time
     start_time = time.time()
