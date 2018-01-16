@@ -1,7 +1,7 @@
 #include <math.h>
 #include "Python.h"
 #include "numpy/arrayobject.h"
-#include "oacc_pr.h"
+#include "oacc_smc.h"
 #include <vector> 
 
 #include <string>
@@ -78,7 +78,7 @@ template<typename T> static PyArrayObject* vector_to_nparray(const vector< vecto
 }
 
 
-PyObject *pr_parallel(PyObject *self, PyObject *args){
+PyObject *smc_parallel(PyObject *self, PyObject *args){
 	PyObject *array = NULL ;
     PyObject *pylist, *item ;
 
@@ -121,19 +121,19 @@ PyObject *pr_parallel(PyObject *self, PyObject *args){
 
     PyObject *np_vec_2D = (PyObject*) vector_to_nparray(hist) ;
 
-    printf("leaving pr_parallel\n") ;
+    printf("leaving smc_parallel\n") ;
 
     return np_vec_2D ;
 }
 
 static PyMethodDef methods[] = {
-	{ "pr_parallel", pr_parallel, METH_VARARGS },
+	{ "smc_parallel", smc_parallel, METH_VARARGS },
 	{ NULL}
 } ;
 
-extern "C" void initpr_parallel(){
+extern "C" void initsmc_parallel(){
 	PyObject *m ;
-	m = Py_InitModule("pr_parallel", methods);
+	m = Py_InitModule("smc_parallel", methods);
 	import_array();
 }
 
