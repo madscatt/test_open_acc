@@ -11,7 +11,7 @@ import make_ring as make_ring
 class parameters():
 
         def __init__(self):
-		self.number_of_steps = 100
+		self.number_of_steps = 2
 		self.temperature = 3.0
 		self.rho = 0.65
 		self.natoms = 701
@@ -168,21 +168,17 @@ def mc_run(restartpdb):
 
 if __name__ == "__main__":
 
-	restartpdb = False
-	restartpdb = 'initial_structure.pdb'
-    import time¬
-    start_time = time.time()¬
+    restartpdb = False
+    restartpdb = 'initial_structure.pdb'
+    import time
+    start_time = time.time()
     mc_run(restartpdb)
-    elapsed_time = time.time() - start_time¬
-    print 'elapsed time = ', elapsed_time¬
+    elapsed_time = time.time() - start_time
+    print 'elapsed time = ', elapsed_time
    
     # hmm, replae this in the future; means nothing for now
 
-    nframes = 1000¬
-    print 'seconds per frame (1000) = ', elapsed_time/nframes¬
+    nframes = 1000
+    print 'seconds per frame (1000) = ', elapsed_time/nframes
 
-
-
-
-
-	print '\n\n>>> DONE <<<\n\n'
+    print '\n\n>>> DONE <<<\n\n'
