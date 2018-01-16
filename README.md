@@ -1,2 +1,2 @@
 # openacc 
-files and docs for mini gpu hackathon, ORNL/Knoxville
+files and docs parallel code development for sassie
