@@ -10,7 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-
+#include <time.h>
 
 using namespace std;
 
@@ -23,64 +23,69 @@ extern void get_distances();
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
+int surface_move(double ***coor, int i) {
 
-/** Convert a c++ 2D vector into a numpy array
- *
- * @param const vector< vector<T> >& vec : 2D vector data
- * @return PyArrayObject* array : converted numpy array
- *
- * Transforms an arbitrary 2D C++ vector into a numpy array. Throws in case of
- * unregular shape. The array may contain empty columns or something else, as
- * long as it's shape is square.
- *
- * Warning this routine makes a copy of the memory!
- */
-template<typename T> static PyArrayObject* vector_to_nparray(const vector< vector<T> >& vec, int type_num = PyArray_INT){
+    double x, y, z, r, dx, dy, dz ;;
+    double max_disp, norm ;
 
-   // rows not empty
-   if( !vec.empty() ){
+    srand(time(NULL)) ;
 
-      // column not empty
-      if( !vec[0].empty() ){
+    bool accepted = false ;
 
-        size_t nRows = vec.size();
-        size_t nCols = vec[0].size();
-        npy_intp dims[2] = {nRows, nCols};
-        PyArrayObject* vec_array = (PyArrayObject *) PyArray_SimpleNew(2, dims, type_num);
+    x = coor[0][i][0] ; 
+    y = coor[0][i][1] ; 
+    z = coor[0][i][2] ; 
 
-        T *vec_array_pointer = (T*) PyArray_DATA(vec_array);
+    r = sqrt(x*x+y*y+z*z) ;
 
-        // copy vector line by line ... maybe could be done at one
-        for (size_t iRow=0; iRow < vec.size(); ++iRow){
+    max_disp = 0.05 ;
+    max_disp = 1.0 ;
+    
+    dx = max_disp * 2.0*((double)rand()/(double)RAND_MAX) - 1.0 ;
+    dy = max_disp * 2.0*((double)rand()/(double)RAND_MAX) - 1.0 ;
+    dz = max_disp * 2.0*((double)rand()/(double)RAND_MAX) - 1.0 ;
 
-          if( vec[iRow].size() != nCols){
-             Py_DECREF(vec_array); // delete
-             throw(string("Can not convert vector<vector<T>> to np.array, since c++ matrix shape is not uniform."));
-          }
+    x += dx ; y += dy ; z += dz ;
+    norm = sqrt(x*x + y*y + z*z) ;
+    x *= r/norm ;
+    y *= r/norm ;
+    z *= r/norm ;
 
-          copy(vec[iRow].begin(),vec[iRow].end(),vec_array_pointer+iRow*nCols);
-        }
+    std::cout << dx << std::endl ;
+    std::cout << dy << std::endl ;
+    std::cout << dz << std::endl << std::endl ;
+/*
+    u_long_range = energy(mol, p)
 
-        return vec_array;
+    if u_long_range:
+        if u_long_range < p.energy:
+            accepted = true ;
+        else:
+            delta_energy = u_long_range - p.energy
+            boltz = math.exp(-p.beta * delta_energy)
+            ran = random.random()
+            if ran < boltz:
+                accepted = true ;
 
-     // Empty columns
-     } else {
-        npy_intp dims[2] = {vec.size(), 0};
-        return (PyArrayObject*) PyArray_ZEROS(2, dims, PyArray_INT, 0);
-     }
+        if accepted:
+            p.energy = u_long_range
+            mol.coor()[0][i][0] = x
+            mol.coor()[0][i][1] = y
+            mol.coor()[0][i][2] = z
+*/
 
-   // no data at all
-   } else {
-      npy_intp dims[2] = {0, 0};
-      return (PyArrayObject*) PyArray_ZEROS(2, dims, PyArray_INT, 0);
-   }
-
+    return  0 ;
 }
+
+
+
+
+
 
 
 PyObject *smc_parallel(PyObject *self, PyObject *args){
 	PyObject *array = NULL ;
-    PyObject *pylist, *item ;
+    PyObject *pList = NULL ;
 
     //std::ostringstream sstream;
     //std::string remark = "#hello";
@@ -89,20 +94,28 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     //std::ofstream outfile(filename.c_str()) ;
     //outfile << remark << std::endl;
      
-    int nframes, natoms, nbins ;
-    double bin_width ;
+    int number_of_steps, natoms ;
+    double temperature, sigma_1, sigma_2, epsilon_ab_a, epsilon_ab_r, rab_a, rab_r, sigma_ab, beta, contrast_1, contrast_2 ;
 
-    if (!PyArg_ParseTuple(args, "Oiiid", &array, &nframes, &natoms, &nbins, &bin_width))
+    if (!PyArg_ParseTuple(args, "OOiiddddddddddd", &array, &pList, &number_of_steps, &natoms, &temperature, &sigma_1, &sigma_2, &epsilon_ab_a, &epsilon_ab_r, &rab_a, &rab_r, &sigma_ab, &beta, &contrast_1, &contrast_2))
         return NULL;
 
-    std::cout << "c: nbins = " << nbins << std::endl ; 
-    std::cout << "c: bin_width = " << bin_width << std::endl ; 
+    std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
+    std::cout << "c: natoms = " <<  natoms<< std::endl ; 
+    std::cout << "c: temperature = " <<  temperature << std::endl ; 
+    std::cout << "c: sigma_1 = " <<  sigma_1 << std::endl ; 
+    std::cout << "c: sigma_2 = " <<  sigma_2 << std::endl ; 
+    std::cout << "c: epsilon_ab_a = " <<  epsilon_ab_a << std::endl ; 
+    std::cout << "c: epsilon_ab_r = " <<  epsilon_ab_r << std::endl ; 
+    std::cout << "c: rab_a = " <<  rab_a << std::endl ; 
+    std::cout << "c: rab_r = " <<  rab_r << std::endl ; 
+    std::cout << "c: sigma_ab = " <<  sigma_ab << std::endl ; 
+    std::cout << "c: beta = " <<  beta << std::endl ; 
+    std::cout << "c: contrast_1 = " <<  contrast_1 << std::endl ; 
+    std::cout << "c: contrast_2 = " <<  contrast_2 << std::endl ; 
 
     double ***c_array;
-    //unsigned long long int npairs ;
-    //std::vector<double> dist(npairs, 0.0) ;
-    //std::vector<int> hist(nbins, 0) ;
-    std::vector<std::vector<int> > hist(nframes, std::vector<int>(nbins,       0));
+    
     //Create C arrays from numpy objects:
     int typenum = NPY_DOUBLE;
     PyArray_Descr *descr;
@@ -113,17 +126,38 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
         return NULL;
     }
 
-    printf("c : nframes = %d\n", nframes);
-    printf("c : natoms = %d\n", natoms);
     printf("c : %f \n", c_array[0][0][0]);
 
-    get_distances(c_array, nframes, natoms, hist, nbins, bin_width) ;
+    int *c_int_array;
+    int typenum2 = NPY_INT;
+    PyArray_Descr *descr2;
+    descr2 = PyArray_DescrFromType(typenum2);
+    npy_intp dims2[1];
+    if (PyArray_AsCArray(&pList, (void *)&c_int_array, dims2, 1, descr2) < 0) {
+        PyErr_SetString(PyExc_TypeError, "error converting to c array");
+        return NULL;
+    }
 
-    PyObject *np_vec_2D = (PyObject*) vector_to_nparray(hist) ;
 
-    printf("leaving smc_parallel\n") ;
+    std::cout << "c: pList[0] = " << c_int_array[0] << std::endl ;
+    std::cout << "c: pList[1] = " << c_int_array[1] << std::endl ;
 
-    return np_vec_2D ;
+    std::cout << "\n\nI am ready to return\n\n" << std::endl ;
+
+    int accepted = 0 ;
+
+    for(int i = 0 ; i < number_of_steps ; i++) {
+        accepted = surface_move(c_array, i) ;
+
+    } // end of i loop
+
+
+
+
+    //get_distances(c_array, nframes, natoms, hist, nbins, bin_width) ;
+
+    Py_RETURN_NONE ;
+
 }
 
 static PyMethodDef methods[] = {
