@@ -1,8 +1,7 @@
 import sasmol.sasmol as sasmol
 import numpy,math,random
 import os,sys
-
-#import smc_parallel
+import smc_parallel
 
 sys.path.append("./")
 
@@ -145,24 +144,7 @@ def mc_run(restartpdb):
 	mol.center(0)
 	print '>> natoms = ',p.natoms
 
-	dcdoutfile = mol.open_dcd_write("traj.dcd")
 
-#	u_long_range = energy(mol,p)
-
-#	print 'energy = ',u_long_range
-
-	for step in xrange(p.number_of_steps):
-		print step,
-		sys.stdout.flush()
-		
-		for i in xrange(p.natoms):
-				
-			surface_move(mol,p,i)
-		mol.center(0)
-		mol.write_dcd_step(dcdoutfile,0,step)
-
-	mol.close_dcd_write(dcdoutfile)
-	mol.write_pdb("final_coor.pdb",0,"w")
 
 	return
 

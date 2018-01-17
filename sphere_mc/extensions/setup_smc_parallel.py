@@ -25,12 +25,13 @@ except AttributeError:
     numpy_include = numpy.get_numpy_include()
 
 # simple extension module
-pr_parallel = Extension(name="pr_parallel",sources=['./pr_parallel.cpp'],
-                   include_dirs = [numpy_include,'./','/share/apps/local/git_working_copies/test_open_acc/pr/extensions'],
-                   #library_dirs = ['/share/apps/local/git_working_copies/test_open_acc/pr/extensions'],
-                   library_dirs = ['/share/apps/local/git_working_copies/test_open_acc/pr/extensions','/share/apps/local/pgi/linux86-64/16.10/lib/','/share/apps/local/pgi/16.10/share_objects/lib64/','/state/partition1/apps/local/pgi/linux86-64/16.10/lib/','/usr/lib/gcc/x86_64-redhat-linux/4.4.7/'],
-                   libraries = ["oacc_pr","accapi", "accg", "accn", "accg2", "dl", "cudadevice", "pgmp", "numa", "pthread", "nspgc", "pgc", "m", "gcc", "c", "gcc"] 
-                   #libraries = ["oacc_pr"],
+smc_parallel = Extension(name="smc_parallel",sources=['./smc_parallel.cpp'],
+                   include_dirs =
+                         [numpy_include,'./','/share/apps/local/git_working_copies/test_open_acc/sphere_mc/extensions'],
+                   library_dirs =
+                         ['/share/apps/local/git_working_copies/test_open_acc/sphere_mc/extensions','/share/apps/local/pgi/linux86-64/16.10/lib/','/share/apps/local/pgi/16.10/share_objects/lib64/','/state/partition1/apps/local/pgi/linux86-64/16.10/lib/','/usr/lib/gcc/x86_64-redhat-linux/4.4.7/'],
+                   libraries = ["oacc_smc","accapi", "accg", "accn", "accg2", "dl", "cudadevice", "pgmp", "numa", "pthread", "nspgc", "pgc", "m", "gcc", "c", "gcc"] 
+                   #libraries = ["oacc_smc"],
                    #extra_compile_args = ["-c++11"]
                    )
 
@@ -39,6 +40,6 @@ setup(  name        = "PR_EXTENSION",
         description = "Module is middle code between python and pgc++ openacc",
         author      = "Joseph E. Curtis",
         version     = "0.1",
-        ext_modules = [pr_parallel]
+        ext_modules = [smc_parallel]
         )
 
