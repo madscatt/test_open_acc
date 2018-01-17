@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctime>
-#include "oacc_pr.h"
+#include "oacc_smc.h"
 
 #include <iostream>
 #include <fstream>
