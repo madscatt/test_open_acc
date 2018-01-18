@@ -14,7 +14,7 @@ import make_ring as make_ring
 class parameters():
 
     def __init__(self):
-        self.number_of_steps = 1000 
+        self.number_of_steps = 100000
         self.temperature = 3.1
         self.rho = 0.65
         self.natoms = 700

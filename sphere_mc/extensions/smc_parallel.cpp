@@ -29,7 +29,7 @@ extern void get_distances();
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
-float energy(float *x_array, float *y_array, float *z_array, energy_parameters p) {
+float energy(float *x_array, float *y_array, float *z_array, energy_parameters p, int atom) {
 
     /*
         method to calculate energy.  
@@ -41,15 +41,14 @@ float energy(float *x_array, float *y_array, float *z_array, energy_parameters p
     float u_long_range_1, u_long_range_2 ;
 
     float xi, yi, zi, xf, yf, zf, dx, dy, dz, dx2, dy2, dz2, r ;
-
-    for (i = 0 ; i < p.natoms - 1 ; i ++)
-    {
-        xi = x_array[i];
-        yi = y_array[i];
-        zi = z_array[i];
+     
+    xi = x_array[atom];
+    yi = y_array[atom];
+    zi = z_array[atom];
     
-        for (j = i + 1 ; j < p.natoms ; j++)
-        {
+    for (j = 0 ; j < p.natoms ; j++)
+    {
+        if(j != atom){
             xf = x_array[j];
             yf = y_array[j];
             zf = z_array[j];
@@ -66,10 +65,8 @@ float energy(float *x_array, float *y_array, float *z_array, energy_parameters p
             u_long_range_2 =  p.epsilon_ab_r * pow(( p.sigma_ab / p.rab_r ),2.0) * exp(-(r/p.rab_r)) ;
 
             u_long_range += u_long_range_1 + u_long_range_2 ; 
-
-        } // end of j-loop
-
-    } // end of i-loop
+        }
+    } // end of j-loop
 
 
     return u_long_range ;
@@ -81,6 +78,7 @@ int surface_move(float *x_array, float * y_array, float *z_array, int i, energy_
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
     float max_disp, norm ;
     float u_long_range, boltz, delta_energy, ran ; 
+    float initial_energy ;
 
     std::random_device rd ;
     std::random_device rd2 ;
@@ -117,7 +115,7 @@ int surface_move(float *x_array, float * y_array, float *z_array, int i, energy_
     y_array[i] = y ;
     z_array[i] = z ;
 
-    u_long_range = energy(x_array, y_array, z_array, parameters) ;
+    u_long_range = energy(x_array, y_array, z_array, parameters, i) ;
 
     if (u_long_range < parameters.energy) {
         accepted = true ;
@@ -256,7 +254,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     for(i = 0 ; i < number_of_steps ; i++) {
      //   std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
-        std::cout << i << std::flush ;   
+        std::cout << i << " " << std::flush ;   
         for(j = 0 ; j < natoms ; j++){ 
             number_accepted += surface_move(x_array, y_array, z_array, j, parameters) ;
         }
