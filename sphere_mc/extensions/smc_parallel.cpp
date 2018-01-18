@@ -10,7 +10,11 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <time.h>
+
+#include <random>
+
+#include <stdio.h>
+#include "dcdio.h"
 
 using namespace std;
 
@@ -23,27 +27,32 @@ extern void get_distances();
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
-int surface_move(double ***coor, int i) {
 
-    double x, y, z, r, dx, dy, dz ;;
-    double max_disp, norm ;
+int surface_move(float *x_array, float * y_array, float *z_array, int i) {
 
-    srand(time(NULL)) ;
+    float x, y, z, r, dx, dy, dz ;;
+    float max_disp, norm ;
+
+    std::random_device rd ;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<float> dist(-1.0,1.0);
 
     bool accepted = false ;
 
-    x = coor[0][i][0] ; 
-    y = coor[0][i][1] ; 
-    z = coor[0][i][2] ; 
+    x = x_array[i] ; 
+    y = y_array[i] ; 
+    z = z_array[i] ; 
 
+    //std::cout << "c : x = " << x << std::endl ;
+    
     r = sqrt(x*x+y*y+z*z) ;
 
     max_disp = 0.05 ;
-    max_disp = 1.0 ;
+    //max_disp = 1.0 ;
     
-    dx = max_disp * 2.0*((double)rand()/(double)RAND_MAX) - 1.0 ;
-    dy = max_disp * 2.0*((double)rand()/(double)RAND_MAX) - 1.0 ;
-    dz = max_disp * 2.0*((double)rand()/(double)RAND_MAX) - 1.0 ;
+    dx = max_disp * dist(mt);
+    dy = max_disp * dist(mt);
+    dz = max_disp * dist(mt);
 
     x += dx ; y += dy ; z += dz ;
     norm = sqrt(x*x + y*y + z*z) ;
@@ -51,9 +60,9 @@ int surface_move(double ***coor, int i) {
     y *= r/norm ;
     z *= r/norm ;
 
-    std::cout << dx << std::endl ;
-    std::cout << dy << std::endl ;
-    std::cout << dz << std::endl << std::endl ;
+    //std::cout << dx << std::endl ;
+    //std::cout << dy << std::endl ;
+    //std::cout << dz << std::endl << std::endl ;
 /*
     u_long_range = energy(mol, p)
 
@@ -73,6 +82,11 @@ int surface_move(double ***coor, int i) {
             mol.coor()[0][i][1] = y
             mol.coor()[0][i][2] = z
 */
+    //std::cout << "c : x = " << x << std::endl << std::endl ;
+
+    x_array[i] = x ;
+    y_array[i] = y ;
+    z_array[i] = z ;
 
     return  0 ;
 }
@@ -93,11 +107,13 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     //std::ofstream outfile(filename.c_str()) ;
     //outfile << remark << std::endl;
-     
+    int i, j, ki; 
     int number_of_steps, natoms ;
     double temperature, sigma_1, sigma_2, epsilon_ab_a, epsilon_ab_r, rab_a, rab_r, sigma_ab, beta, contrast_1, contrast_2 ;
 
-    if (!PyArg_ParseTuple(args, "OOiiddddddddddd", &array, &pList, &number_of_steps, &natoms, &temperature, &sigma_1, &sigma_2, &epsilon_ab_a, &epsilon_ab_r, &rab_a, &rab_r, &sigma_ab, &beta, &contrast_1, &contrast_2))
+    const char * dcdfile_name ;
+
+    if (!PyArg_ParseTuple(args, "OOiiddddddddddds", &array, &pList, &number_of_steps, &natoms, &temperature, &sigma_1, &sigma_2, &epsilon_ab_a, &epsilon_ab_r, &rab_a, &rab_r, &sigma_ab, &beta, &contrast_1, &contrast_2, &dcdfile_name))
         return NULL;
 
     std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
@@ -113,9 +129,14 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     std::cout << "c: beta = " <<  beta << std::endl ; 
     std::cout << "c: contrast_1 = " <<  contrast_1 << std::endl ; 
     std::cout << "c: contrast_2 = " <<  contrast_2 << std::endl ; 
+    std::cout << "c: dcdfile_name = " <<  dcdfile_name << std::endl ; 
 
     double ***c_array;
-    
+
+    float x_array[natoms] ;
+    float y_array[natoms] ;
+    float z_array[natoms] ;
+ 
     //Create C arrays from numpy objects:
     int typenum = NPY_DOUBLE;
     PyArray_Descr *descr;
@@ -126,7 +147,19 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
         return NULL;
     }
 
+    // store coordinates in sepearte 1D arrays
+    //
+    for(i = 0 ; i < natoms ; i++){
+        //printf("c : %i\t %f \n", i,c_array[0][i][0]);
+        x_array[i] = (float)c_array[0][i][0] ;
+        y_array[i] = (float)c_array[0][i][1] ;
+        z_array[i] = (float)c_array[0][i][2] ;
+    }
+
     printf("c : %f \n", c_array[0][0][0]);
+    std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
+    std::cout << "c : y_array[0] = " << y_array[0] << std::endl ;
+    std::cout << "c : z_array[0] = " << z_array[0] << std::endl ;
 
     int *c_int_array;
     int typenum2 = NPY_INT;
@@ -138,7 +171,6 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
         return NULL;
     }
 
-
     std::cout << "c: pList[0] = " << c_int_array[0] << std::endl ;
     std::cout << "c: pList[1] = " << c_int_array[1] << std::endl ;
 
@@ -146,13 +178,38 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     int accepted = 0 ;
 
-    for(int i = 0 ; i < number_of_steps ; i++) {
-        accepted = surface_move(c_array, i) ;
+    // Open DCD file for writing 
+    //
+    //
+    char * filename = (char*)dcdfile_name ;
+
+    FILE * filepointer  ;
+    filepointer = open_dcd_write(filename) ;
+
+    int istart = 0 ;
+    int nsavc = 1 ;
+    int nset = 1 ;
+    double delta = 1.0 ;
+    int headerresult ;
+    int stepresult ;
+    headerresult = write_dcdheader(filepointer, filename, natoms, nset, istart, nsavc, delta) ;
+
+    std::cout << "write dcd header result = " << headerresult << std::endl ;
+
+    for(i = 0 ; i < number_of_steps ; i++) {
+     //   std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
+       
+        for(j = 0 ; j < natoms ; j++){ 
+            accepted = surface_move(x_array, y_array, z_array, j) ;
+        }
+
+    //    std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
+            // stepresult = dcdio.write_dcdstep(filepointer, tx, ty, tz, step)¬
+        stepresult = write_dcdstep(filepointer, natoms, x_array, y_array, z_array, i) ;
 
     } // end of i loop
 
-
-
+    stepresult = close_dcd_write(filepointer) ;
 
     //get_distances(c_array, nframes, natoms, hist, nbins, bin_width) ;
 

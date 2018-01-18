@@ -25,14 +25,14 @@ except AttributeError:
     numpy_include = numpy.get_numpy_include()
 
 # simple extension module
-smc_parallel = Extension(name="smc_parallel",sources=['./smc_parallel.cpp'],
+smc_parallel = Extension(name="smc_parallel",sources=['./smc_parallel.cpp','dcdio.c'],
                    include_dirs =
                          [numpy_include,'./','/share/apps/local/git_working_copies/test_open_acc/sphere_mc/extensions'],
                    library_dirs =
                          ['/share/apps/local/git_working_copies/test_open_acc/sphere_mc/extensions','/share/apps/local/pgi/linux86-64/16.10/lib/','/share/apps/local/pgi/16.10/share_objects/lib64/','/state/partition1/apps/local/pgi/linux86-64/16.10/lib/','/usr/lib/gcc/x86_64-redhat-linux/4.4.7/'],
-                   libraries = ["oacc_smc","accapi", "accg", "accn", "accg2", "dl", "cudadevice", "pgmp", "numa", "pthread", "nspgc", "pgc", "m", "gcc", "c", "gcc"] 
+                   libraries = ["oacc_smc","accapi", "accg", "accn", "accg2", "dl", "cudadevice", "pgmp", "numa", "pthread", "nspgc", "pgc", "m", "gcc", "c", "gcc"],
                    #libraries = ["oacc_smc"],
-                   #extra_compile_args = ["-c++11"]
+                   extra_compile_args = ["-std=c++11"]
                    )
 
 # NumyTypemapTests setup

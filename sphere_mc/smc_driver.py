@@ -14,10 +14,10 @@ import make_ring as make_ring
 class parameters():
 
     def __init__(self):
-        self.number_of_steps = 2
+        self.number_of_steps = 1000 
         self.temperature = 3.1
         self.rho = 0.65
-        self.natoms = 701
+        self.natoms = 700
         self.sigma_1 = 1.0
         self.sigma_2 = 1.0
         self.radius = 30.0
@@ -32,6 +32,8 @@ class parameters():
 
         self.contrast_1 = 1E-6
         self.contrast_2 = -1E-7
+
+        self.dcdfile_name = 'dum.dcd'
 
 def calc_dist(coor1, coor2):
 
@@ -184,7 +186,8 @@ def mc_run(restartpdb):
                               p.sigma_ab,\
                               p.beta,\
                               p.contrast_1,\
-                              p.contrast_2)
+                              p.contrast_2,\
+                              p.dcdfile_name)
 
     return
 
