@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include "dcdio.h"
 
+#include "smc.h"
+
 using namespace std;
 
 extern void get_distances();
@@ -27,15 +29,65 @@ extern void get_distances();
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
+float energy(float *x_array, float *y_array, float *z_array, energy_parameters p) {
 
-int surface_move(float *x_array, float * y_array, float *z_array, int i) {
+    /*
+        method to calculate energy.  
+        returns the sum of the hard-sphere and long-range energy
+    */ 
+    int i, j ;
+    float overlap = 1E99 ;
+    float u_long_range = 0.0 ;
+    float u_long_range_1, u_long_range_2 ;
 
-    float x, y, z, r, dx, dy, dz ;;
+    float xi, yi, zi, xf, yf, zf, dx, dy, dz, dx2, dy2, dz2, r ;
+
+    for (i = 0 ; i < p.natoms - 1 ; i ++)
+    {
+        xi = x_array[i];
+        yi = y_array[i];
+        zi = z_array[i];
+    
+        for (j = i + 1 ; j < p.natoms ; j++)
+        {
+            xf = x_array[j];
+            yf = y_array[j];
+            zf = z_array[j];
+   
+            dx = xf - xi ; dy = yf - yi ; dz = zf - zi ;  
+            dx2 = dx * dx ; dy2 = dy * dy ; dz2 = dz * dz ;
+            r = sqrt(dx2 + dy2 + dz2) ;
+
+            if (r < ( p.sigma_1 + p.sigma_2)) {
+                return overlap ;
+            }
+ 
+            u_long_range_1 = -p.epsilon_ab_a * pow(( p.sigma_ab / p.rab_a ),2.0) * exp(-(r/p.rab_a)) ;
+            u_long_range_2 =  p.epsilon_ab_r * pow(( p.sigma_ab / p.rab_r ),2.0) * exp(-(r/p.rab_r)) ;
+
+            u_long_range += u_long_range_1 + u_long_range_2 ; 
+
+        } // end of j-loop
+
+    } // end of i-loop
+
+
+    return u_long_range ;
+}
+
+
+int surface_move(float *x_array, float * y_array, float *z_array, int i, energy_parameters parameters) {
+
+    float x, y, z, r, dx, dy, dz, tx, ty, tz ;
     float max_disp, norm ;
+    float u_long_range, boltz, delta_energy, ran ; 
 
     std::random_device rd ;
+    std::random_device rd2 ;
     std::mt19937 mt(rd());
+    std::mt19937 mt2(rd2());
     std::uniform_real_distribution<float> dist(-1.0,1.0);
+    std::uniform_real_distribution<float> dist2(0.0,1.0);
 
     bool accepted = false ;
 
@@ -43,6 +95,7 @@ int surface_move(float *x_array, float * y_array, float *z_array, int i) {
     y = y_array[i] ; 
     z = z_array[i] ; 
 
+    tx = x ; ty = y ; tz = z ;
     //std::cout << "c : x = " << x << std::endl ;
     
     r = sqrt(x*x+y*y+z*z) ;
@@ -60,42 +113,32 @@ int surface_move(float *x_array, float * y_array, float *z_array, int i) {
     y *= r/norm ;
     z *= r/norm ;
 
-    //std::cout << dx << std::endl ;
-    //std::cout << dy << std::endl ;
-    //std::cout << dz << std::endl << std::endl ;
-/*
-    u_long_range = energy(mol, p)
-
-    if u_long_range:
-        if u_long_range < p.energy:
-            accepted = true ;
-        else:
-            delta_energy = u_long_range - p.energy
-            boltz = math.exp(-p.beta * delta_energy)
-            ran = random.random()
-            if ran < boltz:
-                accepted = true ;
-
-        if accepted:
-            p.energy = u_long_range
-            mol.coor()[0][i][0] = x
-            mol.coor()[0][i][1] = y
-            mol.coor()[0][i][2] = z
-*/
-    //std::cout << "c : x = " << x << std::endl << std::endl ;
-
     x_array[i] = x ;
     y_array[i] = y ;
     z_array[i] = z ;
 
-    return  0 ;
+    u_long_range = energy(x_array, y_array, z_array, parameters) ;
+
+    if (u_long_range < parameters.energy) {
+        accepted = true ;
+    } else {
+        delta_energy = u_long_range - parameters.energy ;
+        boltz = exp(-parameters.beta * delta_energy) ;
+        ran = dist2(mt2) ;
+        if (ran < boltz) {
+            accepted = true ;
+        } 
+    }
+    if (accepted) {
+        parameters.energy = u_long_range ;
+        return 1 ;
+    } else {
+        x_array[i] = tx ;
+        y_array[i] = ty ;
+        z_array[i] = tz ;
+        return 0 ;
+    }
 }
-
-
-
-
-
-
 
 PyObject *smc_parallel(PyObject *self, PyObject *args){
 	PyObject *array = NULL ;
@@ -107,7 +150,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     //std::ofstream outfile(filename.c_str()) ;
     //outfile << remark << std::endl;
-    int i, j, ki; 
+    int i, j, k ; 
     int number_of_steps, natoms ;
     double temperature, sigma_1, sigma_2, epsilon_ab_a, epsilon_ab_r, rab_a, rab_r, sigma_ab, beta, contrast_1, contrast_2 ;
 
@@ -130,6 +173,23 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     std::cout << "c: contrast_1 = " <<  contrast_1 << std::endl ; 
     std::cout << "c: contrast_2 = " <<  contrast_2 << std::endl ; 
     std::cout << "c: dcdfile_name = " <<  dcdfile_name << std::endl ; 
+
+
+    // put energy inputs into an instance of a struct
+    //
+    //typedef struct energy_parameters parameters ;
+    struct energy_parameters parameters ;
+    parameters.natoms = natoms ;
+    parameters.temperature = temperature ;
+    parameters.sigma_1 = sigma_1 ;
+    parameters.sigma_2 = sigma_2 ;
+    parameters.epsilon_ab_a = epsilon_ab_a ;
+    parameters.epsilon_ab_r = epsilon_ab_r ;
+    parameters.rab_a = rab_a ;
+    parameters.rab_r = rab_r ;
+    parameters.sigma_ab = sigma_ab ;
+    parameters.beta = beta ;
+    parameters.energy = 1E99 ;
 
     double ***c_array;
 
@@ -174,9 +234,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     std::cout << "c: pList[0] = " << c_int_array[0] << std::endl ;
     std::cout << "c: pList[1] = " << c_int_array[1] << std::endl ;
 
-    std::cout << "\n\nI am ready to return\n\n" << std::endl ;
-
-    int accepted = 0 ;
+    int number_accepted = 0 ;
 
     // Open DCD file for writing 
     //
@@ -198,9 +256,9 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     for(i = 0 ; i < number_of_steps ; i++) {
      //   std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
-       
+        std::cout << i << std::flush ;   
         for(j = 0 ; j < natoms ; j++){ 
-            accepted = surface_move(x_array, y_array, z_array, j) ;
+            number_accepted += surface_move(x_array, y_array, z_array, j, parameters) ;
         }
 
     //    std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
@@ -210,6 +268,8 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     } // end of i loop
 
     stepresult = close_dcd_write(filepointer) ;
+
+    std::cout << "\n\nI am ready to return\n\n" << std::endl ;
 
     //get_distances(c_array, nframes, natoms, hist, nbins, bin_width) ;
 
