@@ -29,13 +29,14 @@ extern void get_distances();
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
-float energy(float *x_array, float *y_array, float *z_array, energy_parameters p, int atom) {
+float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  energy_parameters p, int atom) {
 
     /*
         method to calculate energy.  
         returns the sum of the hard-sphere and long-range energy
     */ 
     int i, j ;
+    int i_id, j_id ;
     float overlap = 1E99 ;
     float u_long_range = 0.0 ;
     float u_long_range_1, u_long_range_2 ;
@@ -45,25 +46,52 @@ float energy(float *x_array, float *y_array, float *z_array, energy_parameters p
     xi = x_array[atom];
     yi = y_array[atom];
     zi = z_array[atom];
-    
+   
+    i_id = atom_id[atom] ;
+ 
     for (j = 0 ; j < p.natoms ; j++)
     {
         if(j != atom){
             xf = x_array[j];
             yf = y_array[j];
             zf = z_array[j];
-   
+  
             dx = xf - xi ; dy = yf - yi ; dz = zf - zi ;  
             dx2 = dx * dx ; dy2 = dy * dy ; dz2 = dz * dz ;
             r = sqrt(dx2 + dy2 + dz2) ;
 
-            if (r < ( p.sigma_1 + p.sigma_2)) {
-                return overlap ;
-            }
+            j_id = atom_id[j] ;
  
-            u_long_range_1 = -p.epsilon_ab_a * pow(( p.sigma_ab / p.rab_a ),2.0) * exp(-(r/p.rab_a)) ;
-            u_long_range_2 =  p.epsilon_ab_r * pow(( p.sigma_ab / p.rab_r ),2.0) * exp(-(r/p.rab_r)) ;
+            if(i_id == j_id) {
+                if(i_id == 0){
+                // 11 
+                if (r < ( p.sigma_11 + p.sigma_11)) {
+                    return overlap ;
+                }
+                u_long_range_1 = -p.epsilon_a_11 * pow(( p.sigma_11 / p.r_a_11 ),2.0) * exp(-(r/p.r_a_11)) ;
+                u_long_range_2 =  p.epsilon_r_11 * pow(( p.sigma_11 / p.r_r_11 ),2.0) * exp(-(r/p.r_r_11)) ;
 
+
+                }else {
+                // 22
+                if (r < ( p.sigma_22 + p.sigma_22)) {
+                    return overlap ;
+                }
+                u_long_range_1 = -p.epsilon_a_22 * pow(( p.sigma_22 / p.r_a_22 ),2.0) * exp(-(r/p.r_a_22)) ;
+                u_long_range_2 =  p.epsilon_r_22 * pow(( p.sigma_22 / p.r_r_22 ),2.0) * exp(-(r/p.r_r_22)) ;
+
+                }
+
+            }else {
+            //12
+            if (r < ( p.sigma_11 + p.sigma_22)) {
+                    return overlap ;
+            }
+            u_long_range_1 = -p.epsilon_a_12 * pow(( p.sigma_12 / p.r_a_12 ),2.0) * exp(-(r/p.r_a_12)) ;
+            u_long_range_2 =  p.epsilon_r_12 * pow(( p.sigma_12 / p.r_r_12 ),2.0) * exp(-(r/p.r_r_12)) ;
+            
+            }
+           
             u_long_range += u_long_range_1 + u_long_range_2 ; 
         }
     } // end of j-loop
@@ -73,7 +101,7 @@ float energy(float *x_array, float *y_array, float *z_array, energy_parameters p
 }
 
 
-int surface_move(float *x_array, float * y_array, float *z_array, int i, energy_parameters parameters) {
+int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int i, energy_parameters parameters) {
 
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
     float max_disp, norm ;
@@ -115,7 +143,7 @@ int surface_move(float *x_array, float * y_array, float *z_array, int i, energy_
     y_array[i] = y ;
     z_array[i] = z ;
 
-    u_long_range = energy(x_array, y_array, z_array, parameters, i) ;
+    u_long_range = energy(x_array, y_array, z_array, atom_id, parameters, i) ;
 
     if (u_long_range < parameters.energy) {
         accepted = true ;
@@ -150,28 +178,39 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     //outfile << remark << std::endl;
     int i, j, k ; 
     int number_of_steps, natoms ;
-    double temperature, sigma_1, sigma_2, epsilon_ab_a, epsilon_ab_r, rab_a, rab_r, sigma_ab, beta, contrast_1, contrast_2 ;
+    double temperature, sigma_11, sigma_22, sigma_12 ;
+    double epsilon_a_11, epsilon_a_22, epsilon_a_12 ;
+    double epsilon_r_11, epsilon_r_22, epsilon_r_12 ;
+    double r_a_11, r_a_22, r_a_12, r_r_11, r_r_22, r_r_12 ; 
+    double beta, contrast_1, contrast_2 ;
 
     const char * dcdfile_name ;
 
-    if (!PyArg_ParseTuple(args, "OOiiddddddddddds", &array, &pList, &number_of_steps, &natoms, &temperature, &sigma_1, &sigma_2, &epsilon_ab_a, &epsilon_ab_r, &rab_a, &rab_r, &sigma_ab, &beta, &contrast_1, &contrast_2, &dcdfile_name))
+    if (!PyArg_ParseTuple(args, "OOiiddddddddddddddddddds", &array, &pList, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &dcdfile_name))
         return NULL;
 
     std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
     std::cout << "c: natoms = " <<  natoms<< std::endl ; 
     std::cout << "c: temperature = " <<  temperature << std::endl ; 
-    std::cout << "c: sigma_1 = " <<  sigma_1 << std::endl ; 
-    std::cout << "c: sigma_2 = " <<  sigma_2 << std::endl ; 
-    std::cout << "c: epsilon_ab_a = " <<  epsilon_ab_a << std::endl ; 
-    std::cout << "c: epsilon_ab_r = " <<  epsilon_ab_r << std::endl ; 
-    std::cout << "c: rab_a = " <<  rab_a << std::endl ; 
-    std::cout << "c: rab_r = " <<  rab_r << std::endl ; 
-    std::cout << "c: sigma_ab = " <<  sigma_ab << std::endl ; 
+    std::cout << "c: sigma_11 = " <<  sigma_11 << std::endl ; 
+    std::cout << "c: sigma_22 = " <<  sigma_22 << std::endl ; 
+    std::cout << "c: sigma_12 = " <<  sigma_12 << std::endl ; 
+    std::cout << "c: epsilon_a_11 = " <<  epsilon_a_11 << std::endl ; 
+    std::cout << "c: epsilon_a_22 = " <<  epsilon_a_22 << std::endl ; 
+    std::cout << "c: epsilon_a_12 = " <<  epsilon_a_12 << std::endl ; 
+    std::cout << "c: epsilon_r_11 = " <<  epsilon_r_11 << std::endl ; 
+    std::cout << "c: epsilon_r_22 = " <<  epsilon_r_22 << std::endl ; 
+    std::cout << "c: epsilon_r_12 = " <<  epsilon_r_12 << std::endl ; 
+    std::cout << "c: r_a_11 = " <<  r_a_11 << std::endl ; 
+    std::cout << "c: r_a_22 = " <<  r_a_22 << std::endl ; 
+    std::cout << "c: r_a_12 = " <<  r_a_12 << std::endl ; 
+    std::cout << "c: r_r_11 = " <<  r_r_11 << std::endl ; 
+    std::cout << "c: r_r_22 = " <<  r_r_22 << std::endl ; 
+    std::cout << "c: r_r_12 = " <<  r_r_12 << std::endl ; 
     std::cout << "c: beta = " <<  beta << std::endl ; 
     std::cout << "c: contrast_1 = " <<  contrast_1 << std::endl ; 
     std::cout << "c: contrast_2 = " <<  contrast_2 << std::endl ; 
     std::cout << "c: dcdfile_name = " <<  dcdfile_name << std::endl ; 
-
 
     // put energy inputs into an instance of a struct
     //
@@ -179,13 +218,21 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     struct energy_parameters parameters ;
     parameters.natoms = natoms ;
     parameters.temperature = temperature ;
-    parameters.sigma_1 = sigma_1 ;
-    parameters.sigma_2 = sigma_2 ;
-    parameters.epsilon_ab_a = epsilon_ab_a ;
-    parameters.epsilon_ab_r = epsilon_ab_r ;
-    parameters.rab_a = rab_a ;
-    parameters.rab_r = rab_r ;
-    parameters.sigma_ab = sigma_ab ;
+    parameters.sigma_11 = sigma_11 ;
+    parameters.sigma_22 = sigma_11 ;
+    parameters.sigma_12 = sigma_12 ;
+    parameters.epsilon_a_11 = epsilon_a_11;
+    parameters.epsilon_a_22 = epsilon_a_22;
+    parameters.epsilon_a_12 = epsilon_a_12;
+    parameters.epsilon_r_11 = epsilon_r_11 ;
+    parameters.epsilon_r_22 = epsilon_r_22 ;
+    parameters.epsilon_r_12 = epsilon_r_12 ;
+    parameters.r_a_11 = r_a_11 ;
+    parameters.r_a_22 = r_a_22 ;
+    parameters.r_a_12 = r_a_12 ;
+    parameters.r_r_11 = r_r_11 ;
+    parameters.r_r_22 = r_r_22 ;
+    parameters.r_r_12 = r_r_12 ;
     parameters.beta = beta ;
     parameters.energy = 1E99 ;
 
@@ -219,18 +266,18 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     std::cout << "c : y_array[0] = " << y_array[0] << std::endl ;
     std::cout << "c : z_array[0] = " << z_array[0] << std::endl ;
 
-    int *c_int_array;
+    int *atom_id;
     int typenum2 = NPY_INT;
     PyArray_Descr *descr2;
     descr2 = PyArray_DescrFromType(typenum2);
     npy_intp dims2[1];
-    if (PyArray_AsCArray(&pList, (void *)&c_int_array, dims2, 1, descr2) < 0) {
+    if (PyArray_AsCArray(&pList, (void *)&atom_id, dims2, 1, descr2) < 0) {
         PyErr_SetString(PyExc_TypeError, "error converting to c array");
         return NULL;
     }
 
-    std::cout << "c: pList[0] = " << c_int_array[0] << std::endl ;
-    std::cout << "c: pList[1] = " << c_int_array[1] << std::endl ;
+    std::cout << "c: pList[0] = " << atom_id[0] << std::endl ;
+    std::cout << "c: pList[1] = " << atom_id[1] << std::endl ;
 
     int number_accepted = 0 ;
 
@@ -256,7 +303,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
      //   std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
         std::cout << i << " " << std::flush ;   
         for(j = 0 ; j < natoms ; j++){ 
-            number_accepted += surface_move(x_array, y_array, z_array, j, parameters) ;
+            number_accepted += surface_move(x_array, y_array, z_array, atom_id, j, parameters) ;
         }
 
     //    std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
