@@ -8,6 +8,8 @@ def get_cell_list(pdbfile, r_cutoff):
     mol = sasmol.SasMol(0)
     mol.read_pdb(pdbfile)
 
+    smidge = 1.5
+
     dimensions = mol.calcminmax()
 
     print 'dimensions = ', dimensions
@@ -21,6 +23,8 @@ def get_cell_list(pdbfile, r_cutoff):
     print 'z_min = ', z_min, ' : z_max = ', z_max
 
     dx = x_max - x_min ; dy = y_max - y_min ; dz = z_max - z_min
+
+    dx = dx * smidge ; dy = dy * smidge ; dz = dz * smidge
 
     print 'dx = ', dx, ' : dy = ', dy, ' : dz = ', dz
 
@@ -48,28 +52,45 @@ def get_cell_list(pdbfile, r_cutoff):
     atom_number = 0
 
     atoms_in_cell = [ [] for _ in range(ncell)]
- 
+    not_found = 0 
+    found = 0 
     for atom in coor:
-    
+   
+        continue_flag = True 
         cell_number = 0 
-        for i in xrange(ncell_x):
-            this_min_x = x_min + cell_length_x * i ; #print this_min
-            this_max_x = this_min_x + cell_length_x ; #print this_max
-            for j in xrange(ncell_y): 
-                this_min_y = y_min + cell_length_y * j ; #print this_min
-                this_max_y = this_min_y + cell_length_y ; #print this_max
-                for k in xrange(ncell_z): 
-                    this_min_z = z_min + cell_length_z * k ; #print this_min
-                    this_max_z = this_min_z + cell_length_z ; #print this_max
-                    if atom[0] > this_min_x and atom[0] < this_max_x:
-                        if atom[1] > this_min_y and atom[1] < this_max_y:
-                            if atom[2] > this_min_z and atom[2] < this_max_z:
-                                acell.append(cell_number)
-                                cell_occupancy[cell_number] += 1
-                                atoms_in_cell[cell_number].append(atom_number)
-                                break
-                    cell_number += 1
+        while continue_flag:
+            for i in xrange(ncell_x):
+                this_min_x = x_min + cell_length_x * i ; #print this_min
+                this_max_x = this_min_x + cell_length_x ; #print this_max
+                for j in xrange(ncell_y): 
+                    this_min_y = y_min + cell_length_y * j ; #print this_min
+                    this_max_y = this_min_y + cell_length_y ; #print this_max
+                    for k in xrange(ncell_z): 
+                        this_min_z = z_min + cell_length_z * k ; #print this_min
+                        this_max_z = this_min_z + cell_length_z ; #print this_max
+                        if atom[0] > this_min_x and atom[0] < this_max_x:
+                            if atom[1] > this_min_y and atom[1] < this_max_y:
+                                if atom[2] > this_min_z and atom[2] < this_max_z:
+                                    acell.append(cell_number)
+                                    cell_occupancy[cell_number] += 1
+                                    atoms_in_cell[cell_number].append(atom_number)
+                                    found += 1
+                                    continue_flag = False
+                                    break
+                        cell_number += 1
+                    if not continue_flag:
+                        break
+                if not continue_flag:
+                    break
+            #print 'uh oh ! no home for an atom : atom number ', atom_number
+            continue_flag = False
+            not_found += 1
+            break
         atom_number += 1
+
+    print 'natoms = ', mol.natoms()
+    print 'not found = ', not_found
+    print 'found = ', found
 
     cell_number = 0
     for cell in atoms_in_cell:
