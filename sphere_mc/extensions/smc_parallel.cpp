@@ -101,6 +101,43 @@ float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  ener
 }
 
 
+
+int update_cell_list(int *cell_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, float r_cutoff, float system_size, int natoms) {
+
+    int i ; 
+
+    int ncell ; 
+
+    float rn ;
+
+    for (i = 0; i < ncell ; i++) {
+        head_of_chain_list[i] = 0 ;
+    }
+
+    for (i = 0 ; i < natoms ; i++){
+
+        icel_x = (int)(x_array[i]/rn) ;   
+        icel_y = (int)(y_array[i]/rn) ;   
+        icel_z = (int)(z_array[i]/rn) ;   
+
+        cell_list(i) = head_of_cell(icel_x) ;
+        head_of_cell_lsit(icel_x) = i ;
+ 
+    }
+
+
+/*
+ *  Need 3D assignment and define appropriate data structures outside method
+ *
+ */
+
+
+    return 0 ;
+
+} // end of update_cell_list
+
+
+
 int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int i, energy_parameters parameters) {
 
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
