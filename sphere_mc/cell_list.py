@@ -3,12 +3,49 @@ import math
 import numpy
 
 
+def find_box(atom, ncell_x, ncell_y, ncell_z, x_min, y_min, z_min, cell_length_x, cell_length_y, cell_length_z, acell, cell_occupancy, atoms_in_cell, atom_number):
+
+    found = 0 
+    not_found = 0
+
+    cell_number = 0
+
+    for i in xrange(ncell_x):
+        this_min_x = x_min + cell_length_x * i ; #print this_min
+        this_max_x = this_min_x + cell_length_x ; #print this_max
+        for j in xrange(ncell_y): 
+            this_min_y = y_min + cell_length_y * j ; #print this_min
+            this_max_y = this_min_y + cell_length_y ; #print this_max
+            for k in xrange(ncell_z): 
+                this_min_z = z_min + cell_length_z * k ; #print this_min
+                this_max_z = this_min_z + cell_length_z ; #print this_max
+                if atom[0] > this_min_x and atom[0] <= this_max_x:
+                    if atom[1] > this_min_y and atom[1] <= this_max_y:
+                        if atom[2] > this_min_z and atom[2] <= this_max_z:
+                            acell.append(cell_number)
+                            cell_occupancy[cell_number] += 1
+                            atoms_in_cell[cell_number].append(atom_number)
+                            found += 1
+                            return found, not_found
+                cell_number += 1
+            cell_number += 1
+        cell_number += 1
+    
+    not_found += 1
+
+    print "did not find a cell for atom = ", atom_number
+    print 'atom[0] = ', atom[0]
+    print 'atom[1] = ', atom[1]
+    print 'atom[2] = ', atom[2]
+
+    return found, not_found
+
 def get_cell_list(pdbfile, r_cutoff):
 
     mol = sasmol.SasMol(0)
     mol.read_pdb(pdbfile)
 
-    smidge = 1.5
+    smidge = 1.25
 
     dimensions = mol.calcminmax()
 
@@ -18,13 +55,17 @@ def get_cell_list(pdbfile, r_cutoff):
     y_min = math.floor(dimensions[0][1]) ; y_max = math.ceil(dimensions[1][1])
     z_min = math.floor(dimensions[0][2]) ; z_max = math.ceil(dimensions[1][2])
 
+    x_min *= smidge ; x_max *= smidge
+    y_min *= smidge ; y_max *= smidge
+    z_min *= smidge ; z_max *= smidge
+
     print 'x_min = ', x_min, ' : x_max = ', x_max
     print 'y_min = ', y_min, ' : y_max = ', y_max
     print 'z_min = ', z_min, ' : z_max = ', z_max
 
     dx = x_max - x_min ; dy = y_max - y_min ; dz = z_max - z_min
 
-    dx = dx * smidge ; dy = dy * smidge ; dz = dz * smidge
+    #dx = dx * smidge ; dy = dy * smidge ; dz = dz * smidge
 
     print 'dx = ', dx, ' : dy = ', dy, ' : dz = ', dz
 
@@ -52,41 +93,14 @@ def get_cell_list(pdbfile, r_cutoff):
     atom_number = 0
 
     atoms_in_cell = [ [] for _ in range(ncell)]
-    not_found = 0 
-    found = 0 
+    found = 0 ; not_found = 0
+ 
     for atom in coor:
    
-        continue_flag = True 
-        cell_number = 0 
-        while continue_flag:
-            for i in xrange(ncell_x):
-                this_min_x = x_min + cell_length_x * i ; #print this_min
-                this_max_x = this_min_x + cell_length_x ; #print this_max
-                for j in xrange(ncell_y): 
-                    this_min_y = y_min + cell_length_y * j ; #print this_min
-                    this_max_y = this_min_y + cell_length_y ; #print this_max
-                    for k in xrange(ncell_z): 
-                        this_min_z = z_min + cell_length_z * k ; #print this_min
-                        this_max_z = this_min_z + cell_length_z ; #print this_max
-                        if atom[0] > this_min_x and atom[0] < this_max_x:
-                            if atom[1] > this_min_y and atom[1] < this_max_y:
-                                if atom[2] > this_min_z and atom[2] < this_max_z:
-                                    acell.append(cell_number)
-                                    cell_occupancy[cell_number] += 1
-                                    atoms_in_cell[cell_number].append(atom_number)
-                                    found += 1
-                                    continue_flag = False
-                                    break
-                        cell_number += 1
-                    if not continue_flag:
-                        break
-                if not continue_flag:
-                    break
-            #print 'uh oh ! no home for an atom : atom number ', atom_number
-            continue_flag = False
-            not_found += 1
-            break
+        local_found, local_not_found = find_box(atom, ncell_x, ncell_y, ncell_z, x_min, y_min, z_min, cell_length_x, cell_length_y, cell_length_z, acell, cell_occupancy, atoms_in_cell, atom_number)
         atom_number += 1
+        
+        found += local_found ; not_found += local_not_found
 
     print 'natoms = ', mol.natoms()
     print 'not found = ', not_found
