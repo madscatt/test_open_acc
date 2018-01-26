@@ -178,10 +178,9 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
     ncell_1d, ncell, x_min, y_min, z_min, x_max, y_max, z_max, delta, cell_length = set_up_cells(mol, r_cutoff,  smidge)
 
    
-    ncell_1d = 5
+    #    ncell_1d = 5 ; # use this number of cells to validate return values
  
     make_neighbor_map(ncell_1d)
-
 
     hoc = numpy.zeros(ncell, numpy.int)
 
@@ -196,17 +195,19 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
 
     ll = numpy.zeros(mol.natoms(), numpy.int)
 
-    sys.exit()
- 
     for atom in coor:
    
         local_found, local_not_found = find_box(atom, ncell_1d, x_min, y_min, z_min, cell_length, acell, cell_occupancy, atoms_in_cell, atom_number)
 
-        icell_x = int(atom[0]/cell_length)       
-        icell_y = int(atom[1]/cell_length)       
-        icell_z = int(atom[2]/cell_length)       
+        icell_x = int((atom[0] + (0.5 * cell_length)) * ncell_1d)
+        icell_y = int((atom[1] + (0.5 * cell_length)) * ncell_1d)
+        icell_z = int((atom[2] + (0.5 * cell_length)) * ncell_1d)
 
-        icel = int(icell_x) + ncell_1d * int(icell_y) + ncell_1d * ncell_1d * int(icell_z)
+        icell_x = int((atom[0] + (0.5 * delta))/cell_length) 
+        icell_y = int((atom[1] + (0.5 * delta))/cell_length) 
+        icell_z = int((atom[2] + (0.5 * delta))/cell_length) 
+
+        icel = icell_x + (ncell_1d * icell_y) + (ncell_1d * ncell_1d * icell_z)
   
         ll[atom_number] = hoc[icel]
         hoc[icel] = atom_number 
@@ -214,7 +215,6 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
         atom_number += 1
  
         found += local_found ; not_found += local_not_found
-
 
     #for i in xrange(ncell):
     #    print 'hoc[i] = ', hoc[i],
