@@ -69,7 +69,7 @@ def make_neighbor_map(ncell_1d):
                     print 'map2 = ',map[2]
                     print 'map3 = ',map[8]
 
-    return
+    return map
 
 
 def find_box(atom, ncell_1d, x_min, y_min, z_min, cell_length, acell, cell_occupancy, atoms_in_cell, atom_number):
@@ -180,9 +180,9 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
    
     #    ncell_1d = 5 ; # use this number of cells to validate return values
  
-    make_neighbor_map(ncell_1d)
+    map = make_neighbor_map(ncell_1d)
 
-    hoc = numpy.zeros(ncell, numpy.int)
+    hoc = numpy.ones(ncell, numpy.int) * -1
 
     coor = mol.coor()[0]
     acell = []
@@ -199,16 +199,44 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
    
         local_found, local_not_found = find_box(atom, ncell_1d, x_min, y_min, z_min, cell_length, acell, cell_occupancy, atoms_in_cell, atom_number)
 
-        icell_x = int((atom[0] + (0.5 * cell_length)) * ncell_1d)
-        icell_y = int((atom[1] + (0.5 * cell_length)) * ncell_1d)
-        icell_z = int((atom[2] + (0.5 * cell_length)) * ncell_1d)
+        # for testing only
+
+        if atom_number == 0:
+            atom[0] = -(delta/2.0) + 0.1
+            atom[1] = -(delta/2.0) + 0.1
+            atom[2] = -(delta/2.0) + 0.1
+            atom[0] = (delta/2.0) - 0.1 
+            atom[1] = (delta/2.0)  - 0.1
+            atom[2] = (delta/2.0)  - 0.1
+
+        # allen & tildsley style (assumes cell length = 1)
+
+        #icell_x = int((atom[0] + (0.5 * delta)) * 1.0/ncell_1d)
+        #icell_y = int((atom[1] + (0.5 * delta)) * 1.0/ncell_1d)
+        #icell_z = int((atom[2] + (0.5 * delta)) * 1.0/ncell_1d)
+
+        # frenkel & smit style
 
         icell_x = int((atom[0] + (0.5 * delta))/cell_length) 
         icell_y = int((atom[1] + (0.5 * delta))/cell_length) 
         icell_z = int((atom[2] + (0.5 * delta))/cell_length) 
 
         icel = icell_x + (ncell_1d * icell_y) + (ncell_1d * ncell_1d * icell_z)
-  
+
+        if atom_number == 0:
+            print 'atom[0] = ', atom[0]
+            print 'atom[1] = ', atom[1]
+            print 'atom[2] = ', atom[2]
+            print 'atom 0 is in cell: ', icel
+
+        if icel > ncell:
+            print 'icel = ', icel
+            print 'atom[0] = ', atom[0]
+            print 'atom[1] = ', atom[1]
+            print 'atom[2] = ', atom[2]
+
+            sys.exit()
+ 
         ll[atom_number] = hoc[icel]
         hoc[icel] = atom_number 
          
@@ -216,11 +244,22 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
  
         found += local_found ; not_found += local_not_found
 
-    #for i in xrange(ncell):
-    #    print 'hoc[i] = ', hoc[i],
-#
-#    for i in xrange(mol.natoms()):
-#        print i, ll[i] ; print
+    number_of_empty_cells = 0
+    number_of_occupied_cells = 0
+    for i in xrange(ncell):
+        if hoc[i] > 0:
+            #print 'hoc[i] = ', hoc[i],
+            number_of_occupied_cells += 1
+        else:
+            #print 'cell : ', i, ' is empty'
+            number_of_empty_cells += 1
+
+    print 'number of occupied cells = ', number_of_occupied_cells
+    print 'number of empty cells = ', number_of_empty_cells
+
+
+    for i in xrange(mol.natoms()):
+        print ll[i],
 
     print 'natoms = ', mol.natoms()
     print 'not found = ', not_found
