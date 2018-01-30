@@ -170,14 +170,15 @@ def set_up_cells(mol, r_cutoff, smidge ):
 
     return ncell_1d, ncell, x_min, y_min, z_min, x_max, y_max, z_max, delta, cell_length
 
-def get_cell_list(pdbfile, r_cutoff, smidge):
+def get_cell_list(mol, r_cutoff, smidge, **kwargs):
 
-    mol = sasmol.SasMol(0)
-    mol.read_pdb(pdbfile)
+    debug = False
+
+    if 'debug' in kwargs:
+        debug = True
 
     ncell_1d, ncell, x_min, y_min, z_min, x_max, y_max, z_max, delta, cell_length = set_up_cells(mol, r_cutoff,  smidge)
 
-   
     #    ncell_1d = 5 ; # use this number of cells to validate return values
  
     map = make_neighbor_map(ncell_1d)
@@ -197,7 +198,8 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
 
     for atom in coor:
    
-        local_found, local_not_found = find_box(atom, ncell_1d, x_min, y_min, z_min, cell_length, acell, cell_occupancy, atoms_in_cell, atom_number)
+        if debug:
+            local_found, local_not_found = find_box(atom, ncell_1d, x_min, y_min, z_min, cell_length, acell, cell_occupancy, atoms_in_cell, atom_number)
 
         # for testing only
 
@@ -235,14 +237,13 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
             print 'atom[1] = ', atom[1]
             print 'atom[2] = ', atom[2]
 
-            sys.exit()
- 
         ll[atom_number] = hoc[icel]
         hoc[icel] = atom_number 
          
         atom_number += 1
  
-        found += local_found ; not_found += local_not_found
+        if debug:
+            found += local_found ; not_found += local_not_found
 
     number_of_empty_cells = 0
     number_of_occupied_cells = 0
@@ -258,31 +259,29 @@ def get_cell_list(pdbfile, r_cutoff, smidge):
     print 'number of empty cells = ', number_of_empty_cells
 
 
-    for i in xrange(mol.natoms()):
-        print ll[i],
+    if debug:
+        for i in xrange(mol.natoms()):
+            print ll[i],
 
-    print 'natoms = ', mol.natoms()
-    print 'not found = ', not_found
-    print 'found = ', found
+        print 'natoms = ', mol.natoms()
+        print 'not found = ', not_found
+        print 'found = ', found
 
-    cell_number = 0
-    for cell in atoms_in_cell:
-        if len(cell) > 0:
-            tmol = sasmol.Molecule_Maker(len(cell))
-            this_pdb = 'temp/cell_'+str(cell_number)+'.pdb'
-            tcoor=numpy.zeros((1,len(cell),3),numpy.float)
-            for i in xrange(len(cell)):
-                tcoor[0][i][0] = mol.coor()[0][cell[i]][0]    
-                tcoor[0][i][1] = mol.coor()[0][cell[i]][1]    
-                tcoor[0][i][2] = mol.coor()[0][cell[i]][2]    
-            tmol.setCoor(tcoor)
-            tmol.write_pdb(this_pdb,0,'w')
-            cell_number += 1 
+        cell_number = 0
+        for cell in atoms_in_cell:
+            if len(cell) > 0:
+                tmol = sasmol.Molecule_Maker(len(cell))
+                this_pdb = 'temp/cell_'+str(cell_number)+'.pdb'
+                tcoor=numpy.zeros((1,len(cell),3),numpy.float)
+                for i in xrange(len(cell)):
+                    tcoor[0][i][0] = mol.coor()[0][cell[i]][0]    
+                    tcoor[0][i][1] = mol.coor()[0][cell[i]][1]    
+                    tcoor[0][i][2] = mol.coor()[0][cell[i]][2]    
+                tmol.setCoor(tcoor)
+                tmol.write_pdb(this_pdb,0,'w')
+                cell_number += 1 
 
-
-    
-
-    return
+    return map, ll, hoc
 
 
 if __name__ == "__main__":
@@ -292,6 +291,9 @@ if __name__ == "__main__":
     r_cutoff = 10.0
     smidge = 1.25 # percentage to increase box size so that all occupied cells have neighbors
 
-    get_cell_list(pdbfile, r_cutoff, smidge)
+    mol = sasmol.SasMol(0)
+    mol.read_pdb(pdbfile)
+
+    map, ll, hoc = get_cell_list(mol, r_cutoff, smidge, debug=True)
 
 

@@ -9,7 +9,7 @@ import smc_parallel
 sys.path.append("./")
 
 import make_ring as make_ring
-
+import cell_list
 
 class parameters():
 
@@ -53,7 +53,13 @@ class parameters():
         self.contrast_1 = 1E-6
         self.contrast_2 = -1E-7
 
+
+        self.smidge = 1.25
+        self.r_cutoff = 12.0
+
         self.dcdfile_name = 'dum.dcd'
+
+
 
 def get_atom_id_list(mol):
 
@@ -83,6 +89,10 @@ def mc_run(restartpdb):
 	mol.center(0)
 	print '>> natoms = ', p.natoms
 
+    map, linked_list, head_of_chain = cell_list.get_cell_list(mol, p.r_cutoff, p.smidge)
+
+    sys.exit()
+
     coor = mol.coor()#[0]
 
     atom_id_list = get_atom_id_list(mol)
@@ -92,6 +102,7 @@ def mc_run(restartpdb):
 
     smc_parallel.smc_parallel(coor,\
                               atom_id_list,\
+                              map,\
                               p.number_of_steps,\
                               p.natoms,\
                               p.temperature,\

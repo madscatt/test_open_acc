@@ -116,12 +116,12 @@ int update_cell_list(int *cell_list, int *head_of_chain_list, float *x_array, fl
 
     for (i = 0 ; i < natoms ; i++){
 
-        icel_x = (int)(x_array[i]/rn) ;   
-        icel_y = (int)(y_array[i]/rn) ;   
-        icel_z = (int)(z_array[i]/rn) ;   
+        //icel_x = (int)(x_array[i]/rn) ;   
+        //icel_y = (int)(y_array[i]/rn) ;   
+        //icel_z = (int)(z_array[i]/rn) ;   
 
-        cell_list(i) = head_of_cell(icel_x) ;
-        head_of_cell_lsit(icel_x) = i ;
+        //cell_list(i) = head_of_cell(icel_x) ;
+        //head_of_cell_lsit(icel_x) = i ;
  
     }
 
@@ -206,6 +206,7 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
 PyObject *smc_parallel(PyObject *self, PyObject *args){
 	PyObject *array = NULL ;
     PyObject *pList = NULL ;
+    PyObject *map = NULL ;
 
     //std::ostringstream sstream;
     //std::string remark = "#hello";
@@ -223,7 +224,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     const char * dcdfile_name ;
 
-    if (!PyArg_ParseTuple(args, "OOiiddddddddddddddddddds", &array, &pList, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &dcdfile_name))
+    if (!PyArg_ParseTuple(args, "OOOiiddddddddddddddddddds", &array, &pList, &map, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &dcdfile_name))
         return NULL;
 
     std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
@@ -315,6 +316,16 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     std::cout << "c: pList[0] = " << atom_id[0] << std::endl ;
     std::cout << "c: pList[1] = " << atom_id[1] << std::endl ;
+
+    int *nmap;
+    int typenum3 = NPY_INT;
+    PyArray_Descr *descr3;
+    descr3 = PyArray_DescrFromType(typenum3);
+    npy_intp dims3[1];
+    if (PyArray_AsCArray(&map, (void *)&nmap, dims3, 1, descr3) < 0) {
+        PyErr_SetString(PyExc_TypeError, "error converting map to c array");
+        return NULL;
+    }
 
     int number_accepted = 0 ;
 
