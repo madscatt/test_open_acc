@@ -101,44 +101,39 @@ float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  ener
 }
 
 
-
-int update_cell_list(int *cell_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, float r_cutoff, float system_size, int natoms) {
+int update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, float delta, float cell_length, int natoms, int ncell_1d, int ncell) {
 
     int i ; 
 
-    int ncell ; 
+    int icell_x, icell_y, icell_z, icel ;
 
-    float rn ;
+    for (i = 0; i < natoms ; i++) {
+        linked_list[i] = 0 ;
+    }
 
     for (i = 0; i < ncell ; i++) {
-        head_of_chain_list[i] = 0 ;
+        head_of_chain_list[i] = -1 ;
     }
 
     for (i = 0 ; i < natoms ; i++){
 
-        //icel_x = (int)(x_array[i]/rn) ;   
-        //icel_y = (int)(y_array[i]/rn) ;   
-        //icel_z = (int)(z_array[i]/rn) ;   
+        icell_x = int((x_array[0] + (0.5 * delta))/cell_length) ; 
+        icell_y = int((y_array[1] + (0.5 * delta))/cell_length) ;
+        icell_z = int((z_array[2] + (0.5 * delta))/cell_length) ;
 
-        //cell_list(i) = head_of_cell(icel_x) ;
-        //head_of_cell_lsit(icel_x) = i ;
- 
+        icel = icell_x + (ncell_1d * icell_y) + (ncell_1d * ncell_1d * icell_z) ;
+
+        linked_list[i] = head_of_chain_list[icel] ;
+        head_of_chain_list[icel] =  i ;
+
     }
-
-
-/*
- *  Need 3D assignment and define appropriate data structures outside method
- *
- */
-
 
     return 0 ;
 
 } // end of update_cell_list
 
 
-
-int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int i, energy_parameters parameters) {
+int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int i, energy_parameters parameters, int *linked_list, int *head_of_chain_list, int *nmap, int ncell) {
 
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
     float max_disp, norm ;
@@ -147,10 +142,10 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
 
     std::random_device rd ;
     std::random_device rd2 ;
-    std::mt19937 mt(rd());
-    std::mt19937 mt2(rd2());
-    std::uniform_real_distribution<float> dist(-1.0,1.0);
-    std::uniform_real_distribution<float> dist2(0.0,1.0);
+    std::mt19937 mt(rd()) ;
+    std::mt19937 mt2(rd2()) ;
+    std::uniform_real_distribution<float> dist(-1.0,1.0) ;
+    std::uniform_real_distribution<float> dist2(0.0,1.0) ;
 
     bool accepted = false ;
 
@@ -215,16 +210,16 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     //std::ofstream outfile(filename.c_str()) ;
     //outfile << remark << std::endl;
     int i, j, k ; 
-    int number_of_steps, natoms ;
+    int number_of_steps, natoms, ncell_1d, ncell ;
     double temperature, sigma_11, sigma_22, sigma_12 ;
     double epsilon_a_11, epsilon_a_22, epsilon_a_12 ;
     double epsilon_r_11, epsilon_r_22, epsilon_r_12 ;
     double r_a_11, r_a_22, r_a_12, r_r_11, r_r_22, r_r_12 ; 
     double beta, contrast_1, contrast_2 ;
-
+    float cell_length, delta ;
     const char * dcdfile_name ;
 
-    if (!PyArg_ParseTuple(args, "OOOiiddddddddddddddddddds", &array, &pList, &map, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &dcdfile_name))
+    if (!PyArg_ParseTuple(args, "OOOffiiiiddddddddddddddddddds", &array, &pList, &map, &cell_length, &delta, &ncell_1d, &ncell, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &dcdfile_name))
         return NULL;
 
     std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
@@ -279,6 +274,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     float x_array[natoms] ;
     float y_array[natoms] ;
     float z_array[natoms] ;
+
  
     //Create C arrays from numpy objects:
     int typenum = NPY_DOUBLE;
@@ -340,18 +336,25 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     int istart = 0 ;
     int nsavc = 1 ;
     int nset = 1 ;
-    double delta = 1.0 ;
+    double dcddelta = 1.0 ;
     int headerresult ;
     int stepresult ;
-    headerresult = write_dcdheader(filepointer, filename, natoms, nset, istart, nsavc, delta) ;
+    headerresult = write_dcdheader(filepointer, filename, natoms, nset, istart, nsavc, dcddelta) ;
 
     std::cout << "write dcd header result = " << headerresult << std::endl ;
+
+    int dum ;
+    int linked_list[natoms] ;
+    int head_of_chain_list[ncell] ;
 
     for(i = 0 ; i < number_of_steps ; i++) {
      //   std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
         std::cout << i << " " << std::flush ;   
+
         for(j = 0 ; j < natoms ; j++){ 
-            number_accepted += surface_move(x_array, y_array, z_array, atom_id, j, parameters) ;
+            dum = update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, delta, cell_length, natoms, ncell_1d, ncell) ;
+
+            number_accepted += surface_move(x_array, y_array, z_array, atom_id, j, parameters, linked_list, head_of_chain_list, nmap, ncell) ;
         }
 
     //    std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;

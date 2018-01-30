@@ -89,7 +89,7 @@ def mc_run(restartpdb):
 	mol.center(0)
 	print '>> natoms = ', p.natoms
 
-    map, linked_list, head_of_chain = cell_list.get_cell_list(mol, p.r_cutoff, p.smidge)
+    map, linked_list, head_of_chain, cell_length, delta, ncell_1d, ncell = cell_list.get_cell_list(mol, p.r_cutoff, p.smidge)
 
     sys.exit()
 
@@ -103,6 +103,10 @@ def mc_run(restartpdb):
     smc_parallel.smc_parallel(coor,\
                               atom_id_list,\
                               map,\
+                              cell_length,\
+                              delta,\
+                              ncell_1d,\
+                              ncell,\
                               p.number_of_steps,\
                               p.natoms,\
                               p.temperature,\

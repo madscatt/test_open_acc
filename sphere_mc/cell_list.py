@@ -281,7 +281,7 @@ def get_cell_list(mol, r_cutoff, smidge, **kwargs):
                 tmol.write_pdb(this_pdb,0,'w')
                 cell_number += 1 
 
-    return map, ll, hoc
+    return map, ll, hoc, cell_length, delta, ncell_1d, ncell
 
 
 if __name__ == "__main__":
@@ -294,6 +294,6 @@ if __name__ == "__main__":
     mol = sasmol.SasMol(0)
     mol.read_pdb(pdbfile)
 
-    map, ll, hoc = get_cell_list(mol, r_cutoff, smidge, debug=True)
+    map, ll, hoc, cell_length, delta, ncell_1d, ncell = get_cell_list(mol, r_cutoff, smidge, debug=True)
 
 
