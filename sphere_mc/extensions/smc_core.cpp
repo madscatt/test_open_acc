@@ -1,13 +1,21 @@
-#include <math.h>
 #include <iostream>
+#include <math.h>
 #include <random>
 
-#include "dcdio.h"
+#ifndef SMC_H
+#define SMC_H
+
 #include "smc.h"
 
-using namespace std;
+#endif
 
-extern void get_distances();
+#ifndef DCDIO_H
+#define DCDIO_H
+
+#include "dcdio.h"
+
+#endif
+
 
 /*
     SASSIE  Copyright (C) 2011 Joseph E. Curtis
@@ -15,78 +23,6 @@ extern void get_distances();
     This is free software, and you are welcome to redistribute it under certain
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
-
-float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  energy_parameters p, int atom) {
-
-    /*
-        method to calculate energy.  
-        returns the sum of the hard-sphere and long-range energy
-    */ 
-    int i, j ;
-    int i_id, j_id ;
-    float overlap = 1E99 ;
-    float u_long_range = 0.0 ;
-    float u_long_range_1, u_long_range_2 ;
-
-    float xi, yi, zi, xf, yf, zf, dx, dy, dz, dx2, dy2, dz2, r ;
-     
-    xi = x_array[atom];
-    yi = y_array[atom];
-    zi = z_array[atom];
-   
-    i_id = atom_id[atom] ;
- 
-    for (j = 0 ; j < p.natoms ; j++)
-    {
-        if(j != atom){
-            xf = x_array[j];
-            yf = y_array[j];
-            zf = z_array[j];
-  
-            dx = xf - xi ; dy = yf - yi ; dz = zf - zi ;  
-            dx2 = dx * dx ; dy2 = dy * dy ; dz2 = dz * dz ;
-            r = sqrt(dx2 + dy2 + dz2) ;
-
-            j_id = atom_id[j] ;
- 
-            if(i_id == j_id) {
-                if(i_id == 0){
-                // 11 
-                if (r < ( p.sigma_11 + p.sigma_11)) {
-                    return overlap ;
-                }
-                u_long_range_1 = -p.epsilon_a_11 * pow(( p.sigma_11 / p.r_a_11 ),2.0) * exp(-(r/p.r_a_11)) ;
-                u_long_range_2 =  p.epsilon_r_11 * pow(( p.sigma_11 / p.r_r_11 ),2.0) * exp(-(r/p.r_r_11)) ;
-
-
-                }else {
-                // 22
-                if (r < ( p.sigma_22 + p.sigma_22)) {
-                    return overlap ;
-                }
-                u_long_range_1 = -p.epsilon_a_22 * pow(( p.sigma_22 / p.r_a_22 ),2.0) * exp(-(r/p.r_a_22)) ;
-                u_long_range_2 =  p.epsilon_r_22 * pow(( p.sigma_22 / p.r_r_22 ),2.0) * exp(-(r/p.r_r_22)) ;
-
-                }
-
-            }else {
-            //12
-            if (r < ( p.sigma_11 + p.sigma_22)) {
-                    return overlap ;
-            }
-            u_long_range_1 = -p.epsilon_a_12 * pow(( p.sigma_12 / p.r_a_12 ),2.0) * exp(-(r/p.r_a_12)) ;
-            u_long_range_2 =  p.epsilon_r_12 * pow(( p.sigma_12 / p.r_r_12 ),2.0) * exp(-(r/p.r_r_12)) ;
-            
-            }
-           
-            u_long_range += u_long_range_1 + u_long_range_2 ; 
-        }
-    } // end of j-loop
-
-
-    return u_long_range ;
-
-} ; //end of energy
 
 int get_icell(int ix, int iy, int iz, int ncell_1d) {
     
@@ -168,15 +104,15 @@ void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array,
 
     int icell_x, icell_y, icell_z, icel ;
 
-    for (i = 0; i < natoms ; i++) {
+    for (i = 0; i < natoms ; ++i) {
         linked_list[i] = 0 ;
     }
 
-    for (i = 0; i < ncell ; i++) {
+    for (i = 0; i < ncell ; ++i) {
         head_of_chain_list[i] = -1 ;
     }
 
-    for (i = 0 ; i < natoms ; i++){
+    for (i = 0 ; i < natoms ; ++i){
 
         icell_x = int((x_array[0] + (0.5 * delta))/cell_length) ; 
         icell_y = int((y_array[1] + (0.5 * delta))/cell_length) ;
@@ -301,10 +237,10 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, cons
 
     make_neighbor_map(map, ncell_1d) ;
 
-    for(i = 0 ; i < number_of_steps ; i++) {
+    for(i = 0 ; i < number_of_steps ; ++i) {
         std::cout << i << " " << std::flush ;   
 
-        for(j = 0 ; j < parameters.natoms ; j++){ 
+        for(j = 0 ; j < parameters.natoms ; ++j){ 
             update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, delta, cell_length, parameters.natoms, ncell_1d, ncell) ;
 
             number_accepted += surface_move(x_array, y_array, z_array, atom_id, j, parameters, linked_list, head_of_chain_list, map, ncell) ;

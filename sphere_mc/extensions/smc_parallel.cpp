@@ -1,12 +1,13 @@
-#include <math.h>
 #include "Python.h"
 #include "numpy/arrayobject.h"
-
 #include <iostream>
+
+#ifndef SMC_H
+#define SMC_H
 
 #include "smc.h"
 
-using namespace std;
+#endif
 
 /*
     SASSIE  Copyright (C) 2011 Joseph E. Curtis
@@ -20,7 +21,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     PyObject *pList = NULL ;
 
     int i ;
-    int number_of_steps, natoms, ncell_1d, ncell ;
+    int natoms, number_of_steps, ncell_1d, ncell ;
     double temperature, sigma_11, sigma_22, sigma_12 ;
     double epsilon_a_11, epsilon_a_22, epsilon_a_12 ;
     double epsilon_r_11, epsilon_r_22, epsilon_r_12 ;
@@ -97,7 +98,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     // store coordinates in sepearte 1D arrays
     //
-    for(i = 0 ; i < natoms ; i++){
+    for(i = 0 ; i < natoms ; ++i){
         //printf("c : %i\t %f \n", i,c_array[0][i][0]);
         x_array[i] = (float)c_array[0][i][0] ;
         y_array[i] = (float)c_array[0][i][1] ;

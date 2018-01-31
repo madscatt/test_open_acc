@@ -24,3 +24,4 @@ struct energy_parameters {
 
 void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, const char *dcdfile_name, int number_of_steps, int ncell, int ncell_1d, float cell_length, float delta, energy_parameters parameters)  ;
 
+float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  energy_parameters p, int atom) ;
