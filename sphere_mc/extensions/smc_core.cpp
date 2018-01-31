@@ -1,21 +1,8 @@
 #include <math.h>
-#include "Python.h"
-#include "numpy/arrayobject.h"
-#include "oacc_smc.h"
-#include <vector> 
-
-#include <string>
-
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-
 #include <random>
 
-#include <stdio.h>
 #include "dcdio.h"
-
 #include "smc.h"
 
 using namespace std;
@@ -100,6 +87,81 @@ float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  ener
     return u_long_range ;
 }
 
+
+int get_icell(int ix, int iy, int iz, int ncell_1d) {
+    
+    int xpart, ypart, zpart ;
+
+    xpart = ((ix + ncell_1d) % ncell_1d) ; 
+    ypart = ((iy + ncell_1d) % ncell_1d) * ncell_1d ; 
+    zpart = ((iz + ncell_1d) % ncell_1d) * ncell_1d * ncell_1d ;
+
+    return xpart + ypart + zpart ; 
+
+} ;
+
+void  make_neighbor_map(int *map, int ncell_1d){
+
+    int ix, iy, iz, icell, imap ;
+
+    for(iz = 0; iz < ncell_1d ; ++iz){
+
+        for(iy = 0; iy < ncell_1d ; ++iy){
+
+            for(ix = 0; ix < ncell_1d ; ++ix){
+
+                icell = get_icell(ix, iy, iz, ncell_1d) ;
+                imap = icell * 26 ;
+
+                map[imap] = get_icell(ix, iy, iz + 1, ncell_1d) ;                       // 1
+                map[imap + 1] = get_icell(ix, iy, iz - 1, ncell_1d) ;                       // 2
+
+                map[imap + 2] = get_icell(ix, iy + 1, iz, ncell_1d) ;                       // 3
+                map[imap + 3] = get_icell(ix, iy - 1, iz, ncell_1d) ;                       // 4
+
+                map[imap + 4] = get_icell(ix + 1, iy, iz, ncell_1d) ;                       // 5
+                map[imap + 5] = get_icell(ix - 1, iy, iz, ncell_1d) ;                       // 6
+
+                map[imap + 6] = get_icell(ix + 1, iy + 1, iz, ncell_1d) ;                   // 7
+                map[imap + 7] = get_icell(ix + 1, iy - 1, iz, ncell_1d) ;                   // 8
+                map[imap + 8] = get_icell(ix - 1, iy + 1, iz, ncell_1d) ;                   // 9
+                map[imap + 9] = get_icell(ix - 1, iy - 1, iz, ncell_1d) ;                   // 10
+
+                map[imap + 10] = get_icell(ix + 1, iy, iz + 1, ncell_1d) ;                   // 11
+                map[imap + 11] = get_icell(ix + 1, iy, iz - 1, ncell_1d) ;                   // 12
+                map[imap + 12] = get_icell(ix - 1, iy, iz + 1, ncell_1d) ;                   // 13
+                map[imap + 13] = get_icell(ix - 1, iy, iz - 1, ncell_1d) ;                   // 14
+
+                map[imap + 14] = get_icell(ix + 1, iy + 1, iz + 1, ncell_1d) ;               // 15
+                map[imap + 15] = get_icell(ix + 1, iy + 1, iz - 1, ncell_1d) ;               // 16
+                map[imap + 16] = get_icell(ix + 1, iy - 1, iz + 1, ncell_1d) ;               // 17
+                map[imap + 17] = get_icell(ix + 1, iy - 1, iz - 1, ncell_1d) ;               // 18
+                map[imap + 18] = get_icell(ix - 1, iy + 1, iz + 1, ncell_1d) ;               // 19
+                map[imap + 19] = get_icell(ix - 1, iy + 1, iz - 1, ncell_1d) ;               // 20
+                map[imap + 20] = get_icell(ix - 1, iy - 1, iz + 1, ncell_1d) ;               // 21
+                map[imap + 21] = get_icell(ix - 1, iy - 1, iz - 1, ncell_1d) ;               // 22
+
+                map[imap + 22] = get_icell(ix, iy + 1, iz + 1, ncell_1d) ;                   // 23
+                map[imap + 23] = get_icell(ix, iy + 1, iz - 1, ncell_1d) ;                   // 24
+                map[imap + 24] = get_icell(ix, iy - 1, iz + 1, ncell_1d) ;                   // 25
+                map[imap + 25] = get_icell(ix, iy - 1, iz - 1, ncell_1d) ;                   // 26
+
+
+                if (ix == 0 and iy == 0 and iz == 0){
+                    std::cout <<  "map0 = " << map[4] << std::endl ; 
+                    std::cout <<  "map0 = " << map[6] << std::endl ; 
+                    std::cout <<  "map0 = " << map[2] << std::endl ; 
+                    std::cout <<  "map0 = " << map[8] << std::endl ; 
+                }
+            }
+        }
+    }
+
+    return ; 
+} 
+
+
+
 void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, float delta, float cell_length, int natoms, int ncell_1d, int ncell) {
 
     int i ; 
@@ -132,7 +194,7 @@ void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array,
 } // end of update_cell_list
 
 
-int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int i, energy_parameters parameters, int *linked_list, int *head_of_chain_list, int *nmap, int ncell) {
+int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int i, energy_parameters parameters, int *linked_list, int *head_of_chain_list, int *map, int ncell) {
 
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
     float max_disp, norm ;
@@ -197,38 +259,53 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
     }
 }
 
+FILE *open_dcd( const char *dcdfile_name, int natoms) {
 
-void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, int *nmap, char *filename, int number_of_steps, int ncell, int ncell_1d, float cell_lenght, float delta, energy_parameters parameters) {
-
-    int i, j ;
-
-    int linked_list[parameters.natoms] ;
-    int head_of_chain_list[ncell] ;
-    int number_accepted = 0 ;
-
-    // Open DCD file for writing 
+    char * filename = (char*)dcdfile_name ;
 
     FILE * filepointer  ;
     filepointer = open_dcd_write(filename) ;
-
     int istart = 0 ;
     int nsavc = 1 ;
     int nset = 1 ;
     double dcddelta = 1.0 ;
     int headerresult ;
-    int stepresult ;
-    headerresult = write_dcdheader(filepointer, filename, parameters.natoms, nset, istart, nsavc, dcddelta) ;
+    headerresult = write_dcdheader(filepointer, filename, natoms, nset, istart, nsavc, dcddelta) ;
 
     std::cout << "write dcd header result = " << headerresult << std::endl ;
 
+    return filepointer  ;
+}
+
+void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, const char *dcdfile_name, int number_of_steps, int ncell, int ncell_1d, float cell_length, float delta, energy_parameters parameters) {
+
+    int i, j ;
+    int mapsize, stepresult ;
+
+    int linked_list[parameters.natoms] ;
+    int head_of_chain_list[ncell] ;
+    int number_accepted = 0 ;
+
+    FILE * filepointer ;
+    filepointer = open_dcd(dcdfile_name, parameters.natoms) ;
+
+    mapsize = int(pow(ncell_1d,3)) * 26 ;
+    int map[mapsize] ;
+
+    for(i = 0 ; i < mapsize ; ++i){
+        map[i] = 0 ; 
+    }
+
+
+    make_neighbor_map(map, ncell_1d) ;
+
     for(i = 0 ; i < number_of_steps ; i++) {
-     //   std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
         std::cout << i << " " << std::flush ;   
 
         for(j = 0 ; j < parameters.natoms ; j++){ 
             update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, delta, cell_length, parameters.natoms, ncell_1d, ncell) ;
 
-            number_accepted += surface_move(x_array, y_array, z_array, atom_id, j, parameters, linked_list, head_of_chain_list, nmap, ncell) ;
+            number_accepted += surface_move(x_array, y_array, z_array, atom_id, j, parameters, linked_list, head_of_chain_list, map, ncell) ;
         }
 
         stepresult = write_dcdstep(filepointer, parameters.natoms, x_array, y_array, z_array, i) ;

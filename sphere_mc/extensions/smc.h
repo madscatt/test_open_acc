@@ -1,6 +1,6 @@
 
 struct energy_parameters {
-    float natoms ;
+    int  natoms ;
     float temperature ;
     float sigma_11  ;
     float sigma_22 ;
@@ -20,4 +20,7 @@ struct energy_parameters {
     float energy ;
     float beta ;
 } ;
+
+
+void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, const char *dcdfile_name, int number_of_steps, int ncell, int ncell_1d, float cell_length, float delta, energy_parameters parameters)  ;
 

@@ -15,7 +15,7 @@ class parameters():
 
     def __init__(self):
 
-        self.number_of_steps = 1000000
+        self.number_of_steps = 2
         #self.temperature = 1.0
         self.temperature = 0.3
         self.rho = 0.65
@@ -57,8 +57,7 @@ class parameters():
         self.smidge = 1.25
         self.r_cutoff = 12.0
 
-        self.dcdfile_name = 'dum.dcd'
-
+        self.dcdfile_name = 'test.dcd'
 
 
 def get_atom_id_list(mol):
@@ -91,8 +90,6 @@ def mc_run(restartpdb):
 
     map, linked_list, head_of_chain, cell_length, delta, ncell_1d, ncell = cell_list.get_cell_list(mol, p.r_cutoff, p.smidge)
 
-    sys.exit()
-
     coor = mol.coor()#[0]
 
     atom_id_list = get_atom_id_list(mol)
@@ -102,7 +99,6 @@ def mc_run(restartpdb):
 
     smc_parallel.smc_parallel(coor,\
                               atom_id_list,\
-                              map,\
                               cell_length,\
                               delta,\
                               ncell_1d,\

@@ -25,7 +25,7 @@ except AttributeError:
     numpy_include = numpy.get_numpy_include()
 
 # simple extension module
-smc_parallel = Extension(name="smc_parallel",sources=['./smc_parallel.cpp','dcdio.c'],
+smc_parallel = Extension(name="smc_parallel",sources=['./smc_parallel.cpp','dcdio.c', 'smc_core.cpp'],
                    include_dirs =
                          [numpy_include,'./','/share/apps/local/git_working_copies/test_open_acc/sphere_mc/extensions'],
                    library_dirs =
