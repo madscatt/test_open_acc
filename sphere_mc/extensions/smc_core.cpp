@@ -85,8 +85,8 @@ float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  ener
 
 
     return u_long_range ;
-}
 
+} ; //end of energy
 
 int get_icell(int ix, int iy, int iz, int ncell_1d) {
     
@@ -98,7 +98,7 @@ int get_icell(int ix, int iy, int iz, int ncell_1d) {
 
     return xpart + ypart + zpart ; 
 
-} ;
+} ; // end of get_icell 
 
 void  make_neighbor_map(int *map, int ncell_1d){
 
@@ -152,13 +152,13 @@ void  make_neighbor_map(int *map, int ncell_1d){
                     std::cout <<  "map0 = " << map[6] << std::endl ; 
                     std::cout <<  "map0 = " << map[2] << std::endl ; 
                     std::cout <<  "map0 = " << map[8] << std::endl ; 
-                }
-            }
-        }
-    }
+                } // end of if debugging
+            } // end loop over ix
+        } // end of loop over iy
+    } // end of loop over iz
 
     return ; 
-} 
+} ; // end of make_neighbor_map
 
 
 
@@ -257,7 +257,8 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
         z_array[i] = tz ;
         return 0 ;
     }
-}
+
+} ; // end of surface move
 
 FILE *open_dcd( const char *dcdfile_name, int natoms) {
 
@@ -275,8 +276,10 @@ FILE *open_dcd( const char *dcdfile_name, int natoms) {
     std::cout << "write dcd header result = " << headerresult << std::endl ;
 
     return filepointer  ;
-}
 
+} ; // end of open_dcd
+
+ 
 void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, const char *dcdfile_name, int number_of_steps, int ncell, int ncell_1d, float cell_length, float delta, energy_parameters parameters) {
 
     int i, j ;
@@ -294,8 +297,7 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, cons
 
     for(i = 0 ; i < mapsize ; ++i){
         map[i] = 0 ; 
-    }
-
+    } // end of i loop
 
     make_neighbor_map(map, ncell_1d) ;
 
@@ -316,6 +318,6 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, cons
 
     return ;
 
-}
+} ; // end of smc_core
 
 
