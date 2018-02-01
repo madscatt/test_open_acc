@@ -36,9 +36,14 @@ int get_icell(int ix, int iy, int iz, int ncell_1d) {
 
 } ; // end of get_icell 
 
-void  make_neighbor_map(int *map, int ncell_1d){
+void  make_neighbor_map(int *map, int mapsize,  int ncell_1d){
 
-    int ix, iy, iz, icell, imap ;
+    int i, ix, iy, iz, icell, imap ;
+
+    for(i = 0 ; i < mapsize ; ++i){
+        map[i] = 0 ; 
+    } // end of i loop
+
 
     for(iz = 0; iz < ncell_1d ; ++iz){
 
@@ -139,12 +144,10 @@ void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array,
 } // end of update_cell_list
 
 
-int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int i, energy_parameters parameters, int *linked_list, int *head_of_chain_list, int *map, int ncell) {
+int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int atom, energy_parameters parameters, int *linked_list, int *head_of_chain_list, int *map, int ncell, float cell_length, float delta, int ncell_1d) {
 
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
-    float max_disp, norm ;
-    float u_long_range, boltz, delta_energy, ran ; 
-    float initial_energy ;
+    float norm, final_energy, initial_energy, boltz, delta_energy, ran ; 
 
     std::random_device rd ;
     std::random_device rd2 ;
@@ -155,21 +158,17 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
 
     bool accepted = false ;
 
-    x = x_array[i] ; 
-    y = y_array[i] ; 
-    z = z_array[i] ; 
+    x = x_array[atom] ;
+    y = y_array[atom] ;
+    z = z_array[atom] ;
 
     tx = x ; ty = y ; tz = z ;
-    //std::cout << "c : x = " << x << std::endl ;
     
     r = sqrt(x*x+y*y+z*z) ;
 
-    max_disp = 0.05 ;
-    //max_disp = 1.0 ;
-    
-    dx = max_disp * dist(mt);
-    dy = max_disp * dist(mt);
-    dz = max_disp * dist(mt);
+    dx = parameters.max_displacement * dist(mt);
+    dy = parameters.max_displacement * dist(mt);
+    dz = parameters.max_displacement * dist(mt);
 
     x += dx ; y += dy ; z += dz ;
     norm = sqrt(x*x + y*y + z*z) ;
@@ -177,16 +176,21 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
     y *= r/norm ;
     z *= r/norm ;
 
-    x_array[i] = x ;
-    y_array[i] = y ;
-    z_array[i] = z ;
+    // get initial energy
 
-    u_long_range = energy(x_array, y_array, z_array, atom_id, parameters, i) ;
+    initial_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, parameters, delta, cell_length, atom, ncell_1d) ;
 
-    if (u_long_range < parameters.energy) {
+    x_array[atom] = x ;
+    y_array[atom] = y ;
+    z_array[atom] = z ;
+
+    // get final energy
+    final_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, parameters, delta, cell_length, atom, ncell_1d) ;
+
+    if (final_energy < initial_energy) {
         accepted = true ;
     } else {
-        delta_energy = u_long_range - parameters.energy ;
+        delta_energy = final_energy - initial_energy ;
         boltz = exp(-parameters.beta * delta_energy) ;
         ran = dist2(mt2) ;
         if (ran < boltz) {
@@ -194,12 +198,12 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
         } 
     }
     if (accepted) {
-        parameters.energy = u_long_range ;
+        parameters.energy = final_energy ;
         return 1 ;
     } else {
-        x_array[i] = tx ;
-        y_array[i] = ty ;
-        z_array[i] = tz ;
+        x_array[atom] = tx ;
+        y_array[atom] = ty ;
+        z_array[atom] = tz ;
         return 0 ;
     }
 
@@ -227,8 +231,12 @@ FILE *open_dcd( const char *dcdfile_name, int natoms) {
  
 void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, const char *dcdfile_name, int number_of_steps, int ncell, int ncell_1d, float cell_length, float delta, energy_parameters parameters) {
 
-    int i, j ;
+    int i, j, atom ;
     int mapsize, stepresult ;
+
+    std::random_device rd ;
+    std::mt19937 mt(rd()) ;
+    std::uniform_int_distribution<int> random_atom(0,parameters.natoms) ;
 
     int linked_list[parameters.natoms] ;
     int head_of_chain_list[ncell] ;
@@ -240,21 +248,18 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, cons
     mapsize = int(pow(ncell_1d,3)) * 26 ;
     int map[mapsize] ;
 
-    for(i = 0 ; i < mapsize ; ++i){
-        map[i] = 0 ; 
-    } // end of i loop
-
-    make_neighbor_map(map, ncell_1d) ;
+    make_neighbor_map(map, mapsize, ncell_1d) ;
 
     for(i = 0 ; i < number_of_steps ; ++i) {
         std::cout << i << " " << std::flush ;   
 
-        // need to pick a random atom, not in succession
-
         for(j = 0 ; j < parameters.natoms ; ++j){ 
+
+            atom  = random_atom(mt) ;
+
             update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, delta, cell_length, parameters.natoms, ncell_1d, ncell) ;
 
-            number_accepted += surface_move(x_array, y_array, z_array, atom_id, j, parameters, linked_list, head_of_chain_list, map, ncell) ;
+            number_accepted += surface_move(x_array, y_array, z_array, atom_id, atom, parameters, linked_list, head_of_chain_list, map, ncell, cell_length, delta, ncell_1d) ;
         }
 
         stepresult = write_dcdstep(filepointer, parameters.natoms, x_array, y_array, z_array, i) ;

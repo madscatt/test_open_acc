@@ -20,6 +20,7 @@ struct energy_parameters {
     float energy ;
     float beta ;
     float r_cutoff ;
+    float max_displacement ;
 } ;
 
 

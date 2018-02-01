@@ -15,7 +15,7 @@ class parameters():
 
     def __init__(self):
 
-        self.number_of_steps = 2
+        self.number_of_steps = 1000 
         #self.temperature = 1.0
         self.temperature = 0.3
         self.rho = 0.65
@@ -55,6 +55,7 @@ class parameters():
 
         self.smidge = 1.25
         self.r_cutoff = 12.0
+        self.max_displacement = 0.05
 
         self.dcdfile_name = 'test.dcd'
 
@@ -124,6 +125,7 @@ def mc_run(restartpdb):
                               p.contrast_1,\
                               p.contrast_2,\
                               p.r_cutoff,\
+                              p.max_displacement,\
                               p.dcdfile_name)
 
     return

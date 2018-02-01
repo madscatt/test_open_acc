@@ -26,11 +26,11 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     double epsilon_a_11, epsilon_a_22, epsilon_a_12 ;
     double epsilon_r_11, epsilon_r_22, epsilon_r_12 ;
     double r_a_11, r_a_22, r_a_12, r_r_11, r_r_22, r_r_12 ; 
-    double beta, contrast_1, contrast_2, r_cutoff ;
+    double beta, contrast_1, contrast_2, r_cutoff, max_displacement;
     float cell_length, delta ;
     const char * dcdfile_name ;
 
-    if (!PyArg_ParseTuple(args, "OOffiiiidddddddddddddddddddds", &array, &pList, &cell_length, &delta, &ncell_1d, &ncell, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &r_cutoff, &dcdfile_name))
+    if (!PyArg_ParseTuple(args, "OOffiiiiddddddddddddddddddddds", &array, &pList, &cell_length, &delta, &ncell_1d, &ncell, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &r_cutoff, &max_displacement, &dcdfile_name))
         return NULL;
 
     std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
@@ -55,6 +55,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     std::cout << "c: contrast_1 = " <<  contrast_1 << std::endl ; 
     std::cout << "c: contrast_2 = " <<  contrast_2 << std::endl ; 
     std::cout << "c: r_cutoff = " <<  r_cutoff << std::endl ; 
+    std::cout << "c: max_displacement = " <<  max_displacement << std::endl ; 
     std::cout << "c: dcdfile_name = " <<  dcdfile_name << std::endl ; 
 
     // put energy inputs into an instance of a struct
@@ -81,6 +82,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     parameters.beta = beta ;
     parameters.energy = 1E99 ;
     parameters.r_cutoff = r_cutoff ;
+    parameters.max_displacement = max_displacement ;
 
     double ***c_array;
 
