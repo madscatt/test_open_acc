@@ -19,9 +19,16 @@ struct energy_parameters {
     float r_r_12 ;
     float energy ;
     float beta ;
+    float r_cutoff ;
 } ;
 
 
 void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, const char *dcdfile_name, int number_of_steps, int ncell, int ncell_1d, float cell_length, float delta, energy_parameters parameters)  ;
 
 float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  energy_parameters p, int atom) ;
+
+int get_my_cell(float x, float y, float z, float delta, float cell_length, int ncell_1d) ;
+
+float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  int *linked_list, int *head_of_chain_list, energy_parameters p, float delta, float cell_length, int atom, int ncell_1d) ;
+
+float pair_energy(float xi, float yi, float zi, float xj, float yj, float zj, int atom_i, int atom_j, int id_i, int id_j, energy_parameters p) ;

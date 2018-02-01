@@ -53,7 +53,6 @@ class parameters():
         self.contrast_1 = 1E-6
         self.contrast_2 = -1E-7
 
-
         self.smidge = 1.25
         self.r_cutoff = 12.0
 
@@ -124,6 +123,7 @@ def mc_run(restartpdb):
                               p.beta,\
                               p.contrast_1,\
                               p.contrast_2,\
+                              p.r_cutoff,\
                               p.dcdfile_name)
 
     return

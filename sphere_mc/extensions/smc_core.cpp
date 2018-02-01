@@ -97,33 +97,42 @@ void  make_neighbor_map(int *map, int ncell_1d){
 } ; // end of make_neighbor_map
 
 
+int get_my_cell(float x, float y, float z, float delta, float cell_length, int ncell_1d) {
 
-void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, float delta, float cell_length, int natoms, int ncell_1d, int ncell) {
+        int icell_x, icell_y, icell_z, icel ;
 
-    int i ; 
-
-    int icell_x, icell_y, icell_z, icel ;
-
-    for (i = 0; i < natoms ; ++i) {
-        linked_list[i] = 0 ;
-    }
-
-    for (i = 0; i < ncell ; ++i) {
-        head_of_chain_list[i] = -1 ;
-    }
-
-    for (i = 0 ; i < natoms ; ++i){
-
-        icell_x = int((x_array[0] + (0.5 * delta))/cell_length) ; 
-        icell_y = int((y_array[1] + (0.5 * delta))/cell_length) ;
-        icell_z = int((z_array[2] + (0.5 * delta))/cell_length) ;
+        icell_x = int((x + (0.5 * delta))/cell_length) ; 
+        icell_y = int((y + (0.5 * delta))/cell_length) ;
+        icell_z = int((z + (0.5 * delta))/cell_length) ;
 
         icel = icell_x + (ncell_1d * icell_y) + (ncell_1d * ncell_1d * icell_z) ;
 
+        return icel ;
+
+} ; // end of get_my_cell
+
+
+void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, float delta, float cell_length, int natoms, int ncell_1d, int ncell) {
+
+    int i, icel ; 
+
+    for (i = 0; i < natoms ; ++i) {
+        linked_list[i] = -1 ;
+
+    } // end of loop over natoms
+
+    for (i = 0; i < ncell ; ++i) {
+        head_of_chain_list[i] = -1 ;
+
+    } // end of loop over ncell
+
+    for (i = 0 ; i < natoms ; ++i){
+
+        icel = get_my_cell(x_array[i], y_array[i], z_array[i], delta, cell_length, ncell_1d) ;
         linked_list[i] = head_of_chain_list[icel] ;
         head_of_chain_list[icel] =  i ;
 
-    }
+    } // end of loop over natoms
 
     return ;
 
@@ -239,6 +248,8 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, cons
 
     for(i = 0 ; i < number_of_steps ; ++i) {
         std::cout << i << " " << std::flush ;   
+
+        // need to pick a random atom, not in succession
 
         for(j = 0 ; j < parameters.natoms ; ++j){ 
             update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, delta, cell_length, parameters.natoms, ncell_1d, ncell) ;
