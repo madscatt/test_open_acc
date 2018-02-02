@@ -58,11 +58,11 @@ def ring(ring_diameter,number_of_balls,ball_diameter):
 
 	m1 = sasmol.SasMol(0)
 
-        coor = numpy.zeros((1,number_of_balls-1,3),numpy.float)
+        coor = numpy.zeros((1,number_of_balls,3),numpy.float)
 
 	name = []
 	
-	for k in xrange(start,end):		
+	for k in xrange(start,end+1):		
 
 		xp = ring_diameter * math.cos(math.asin(2.0*k/n))*math.cos(2.0*PI*k/gr)		
 #		xp2 = ring_diameter2 * math.cos(math.asin(2.0*k/n))*math.cos(2.0*PI*k/gr)		
@@ -88,7 +88,7 @@ def ring(ring_diameter,number_of_balls,ball_diameter):
 
 	#outfile.close()
 	
-        get_pdb_values(m1,number_of_balls-1)
+        get_pdb_values(m1,number_of_balls)
 	m1.setName(name)
         element =[item[0] for item in name]
         m1.setElement(element)
