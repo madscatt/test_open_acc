@@ -24,13 +24,13 @@
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
-int get_icell(int ix, int iy, int iz, int ncell_1d) {
+int get_icell(system_parameters sp, int ix, int iy, int iz) {
     
     int xpart, ypart, zpart ;
 
-    xpart = ((ix + ncell_1d) % ncell_1d) ; 
-    ypart = ((iy + ncell_1d) % ncell_1d) * ncell_1d ; 
-    zpart = ((iz + ncell_1d) % ncell_1d) * ncell_1d * ncell_1d ;
+    xpart = ((ix + sp.ncell_1d) % sp.ncell_1d) ; 
+    ypart = ((iy + sp.ncell_1d) % sp.ncell_1d) * sp.ncell_1d ; 
+    zpart = ((iz + sp.ncell_1d) % sp.ncell_1d) * sp.ncell_1d * sp.ncell_1d ;
 
     return xpart + ypart + zpart ; 
 
@@ -44,48 +44,47 @@ void  make_neighbor_map(int *map, system_parameters sp){
         map[i] = 0 ; 
     } // end of i loop over sp.mapsize
 
-
     for(iz = 0; iz < sp.ncell_1d ; ++iz){
 
         for(iy = 0; iy < sp.ncell_1d ; ++iy){
 
             for(ix = 0; ix < sp.ncell_1d ; ++ix){
 
-                icell = get_icell(ix, iy, iz, sp.ncell_1d) ;
+                icell = get_icell(sp, ix, iy, iz) ;
                 imap = icell * 26 ;
 
-                map[imap] = get_icell(ix, iy, iz + 1, sp.ncell_1d) ;                       // 1
-                map[imap + 1] = get_icell(ix, iy, iz - 1, sp.ncell_1d) ;                       // 2
+                map[imap] = get_icell(sp, ix, iy, iz + 1) ;                 // 1
+                map[imap + 1] = get_icell(sp, ix, iy, iz - 1) ;             // 2
 
-                map[imap + 2] = get_icell(ix, iy + 1, iz, sp.ncell_1d) ;                       // 3
-                map[imap + 3] = get_icell(ix, iy - 1, iz, sp.ncell_1d) ;                       // 4
+                map[imap + 2] = get_icell(sp, ix, iy + 1, iz) ;             // 3
+                map[imap + 3] = get_icell(sp, ix, iy - 1, iz) ;             // 4
 
-                map[imap + 4] = get_icell(ix + 1, iy, iz, sp.ncell_1d) ;                       // 5
-                map[imap + 5] = get_icell(ix - 1, iy, iz, sp.ncell_1d) ;                       // 6
+                map[imap + 4] = get_icell(sp, ix + 1, iy, iz) ;             // 5
+                map[imap + 5] = get_icell(sp, ix - 1, iy, iz) ;             // 6
 
-                map[imap + 6] = get_icell(ix + 1, iy + 1, iz, sp.ncell_1d) ;                   // 7
-                map[imap + 7] = get_icell(ix + 1, iy - 1, iz, sp.ncell_1d) ;                   // 8
-                map[imap + 8] = get_icell(ix - 1, iy + 1, iz, sp.ncell_1d) ;                   // 9
-                map[imap + 9] = get_icell(ix - 1, iy - 1, iz, sp.ncell_1d) ;                   // 10
+                map[imap + 6] = get_icell(sp, ix + 1, iy + 1, iz) ;         // 7
+                map[imap + 7] = get_icell(sp, ix + 1, iy - 1, iz) ;         // 8
+                map[imap + 8] = get_icell(sp, ix - 1, iy + 1, iz) ;         // 9
+                map[imap + 9] = get_icell(sp, ix - 1, iy - 1, iz) ;         // 10
 
-                map[imap + 10] = get_icell(ix + 1, iy, iz + 1, sp.ncell_1d) ;                   // 11
-                map[imap + 11] = get_icell(ix + 1, iy, iz - 1, sp.ncell_1d) ;                   // 12
-                map[imap + 12] = get_icell(ix - 1, iy, iz + 1, sp.ncell_1d) ;                   // 13
-                map[imap + 13] = get_icell(ix - 1, iy, iz - 1, sp.ncell_1d) ;                   // 14
+                map[imap + 10] = get_icell(sp, ix + 1, iy, iz + 1) ;        // 11
+                map[imap + 11] = get_icell(sp, ix + 1, iy, iz - 1) ;        // 12
+                map[imap + 12] = get_icell(sp, ix - 1, iy, iz + 1) ;        // 13
+                map[imap + 13] = get_icell(sp, ix - 1, iy, iz - 1) ;        // 14
 
-                map[imap + 14] = get_icell(ix + 1, iy + 1, iz + 1, sp.ncell_1d) ;               // 15
-                map[imap + 15] = get_icell(ix + 1, iy + 1, iz - 1, sp.ncell_1d) ;               // 16
-                map[imap + 16] = get_icell(ix + 1, iy - 1, iz + 1, sp.ncell_1d) ;               // 17
-                map[imap + 17] = get_icell(ix + 1, iy - 1, iz - 1, sp.ncell_1d) ;               // 18
-                map[imap + 18] = get_icell(ix - 1, iy + 1, iz + 1, sp.ncell_1d) ;               // 19
-                map[imap + 19] = get_icell(ix - 1, iy + 1, iz - 1, sp.ncell_1d) ;               // 20
-                map[imap + 20] = get_icell(ix - 1, iy - 1, iz + 1, sp.ncell_1d) ;               // 21
-                map[imap + 21] = get_icell(ix - 1, iy - 1, iz - 1, sp.ncell_1d) ;               // 22
+                map[imap + 14] = get_icell(sp, ix + 1, iy + 1, iz + 1) ;    // 15
+                map[imap + 15] = get_icell(sp, ix + 1, iy + 1, iz - 1) ;    // 16
+                map[imap + 16] = get_icell(sp, ix + 1, iy - 1, iz + 1) ;    // 17
+                map[imap + 17] = get_icell(sp, ix + 1, iy - 1, iz - 1) ;    // 18
+                map[imap + 18] = get_icell(sp, ix - 1, iy + 1, iz + 1) ;    // 19
+                map[imap + 19] = get_icell(sp, ix - 1, iy + 1, iz - 1) ;    // 20
+                map[imap + 20] = get_icell(sp, ix - 1, iy - 1, iz + 1) ;    // 21
+                map[imap + 21] = get_icell(sp, ix - 1, iy - 1, iz - 1) ;    // 22
 
-                map[imap + 22] = get_icell(ix, iy + 1, iz + 1, sp.ncell_1d) ;                   // 23
-                map[imap + 23] = get_icell(ix, iy + 1, iz - 1, sp.ncell_1d) ;                   // 24
-                map[imap + 24] = get_icell(ix, iy - 1, iz + 1, sp.ncell_1d) ;                   // 25
-                map[imap + 25] = get_icell(ix, iy - 1, iz - 1, sp.ncell_1d) ;                   // 26
+                map[imap + 22] = get_icell(sp, ix, iy + 1, iz + 1) ;        // 23
+                map[imap + 23] = get_icell(sp, ix, iy + 1, iz - 1) ;        // 24
+                map[imap + 24] = get_icell(sp, ix, iy - 1, iz + 1) ;        // 25
+                map[imap + 25] = get_icell(sp, ix, iy - 1, iz - 1) ;        // 26
 
 
                 if (ix == 0 and iy == 0 and iz == 0){
@@ -103,7 +102,7 @@ void  make_neighbor_map(int *map, system_parameters sp){
 } ; // end of make_neighbor_map
 
 
-int get_my_cell(float x, float y, float z, system_parameters sp) {
+int get_my_cell(system_parameters sp, float x, float y, float z) {
 
         int icell_x, icell_y, icell_z, icel ;
 
@@ -118,7 +117,7 @@ int get_my_cell(float x, float y, float z, system_parameters sp) {
 } ; // end of get_my_cell
 
 
-void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, energy_parameters ep, system_parameters sp) {
+void update_cell_list(float *x_array, float *y_array, float *z_array, int *linked_list, int *head_of_chain_list, energy_parameters ep, system_parameters sp) {
 
     int i, icel ; 
 
@@ -134,7 +133,7 @@ void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array,
 
     for (i = 0 ; i < ep.natoms ; ++i){
 
-        icel = get_my_cell(x_array[i], y_array[i], z_array[i], sp) ;
+        icel = get_my_cell(sp, x_array[i], y_array[i], z_array[i]) ;
         linked_list[i] = head_of_chain_list[icel] ;
         head_of_chain_list[icel] =  i ;
 
@@ -145,7 +144,7 @@ void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array,
 } // end of update_cell_list
 
 
-int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int atom, energy_parameters ep, int *linked_list, int *head_of_chain_list, int *map, system_parameters sp) {
+int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int *linked_list, int *head_of_chain_list, int *map, energy_parameters ep, system_parameters sp, int atom) {
 
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
     float norm, final_energy, initial_energy, boltz, delta_energy, ran ; 
@@ -179,14 +178,14 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
 
     // get initial energy
 
-    initial_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, ep, sp, atom) ;
+    initial_energy = linked_list_energy(x_array, y_array, z_array, atom_id, linked_list, head_of_chain_list, ep, sp, atom) ;
 
     x_array[atom] = x ;
     y_array[atom] = y ;
     z_array[atom] = z ;
 
     // get final energy
-    final_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, ep, sp, atom) ;
+    final_energy = linked_list_energy(x_array, y_array, z_array, atom_id, linked_list, head_of_chain_list, ep, sp, atom) ;
 
     if (final_energy < initial_energy) {
         accepted = true ;
@@ -258,9 +257,9 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, ener
 
             atom  = random_atom(mt) ;
 
-            update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, ep, sp) ;
+            update_cell_list(x_array, y_array, z_array, linked_list, head_of_chain_list, ep, sp) ;
 
-            number_accepted += surface_move(x_array, y_array, z_array, atom_id, atom, ep, linked_list, head_of_chain_list, map, sp) ;
+            number_accepted += surface_move(x_array, y_array, z_array, atom_id, linked_list, head_of_chain_list, map, ep, sp, atom) ;
         } // end of j loop over ep.natoms
 
         step_result = write_dcdstep(filepointer, ep.natoms, x_array, y_array, z_array, i) ;

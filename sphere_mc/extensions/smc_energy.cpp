@@ -21,7 +21,7 @@ float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  ener
         method to calculate energy.  
         returns the sum of the hard-sphere and long-range energy
     */ 
-    int i, j ;
+    int j ;
     int i_id, j_id ;
     float overlap = 1E99 ;
     float u_long_range = 0.0 ;

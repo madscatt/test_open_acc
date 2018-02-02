@@ -26,7 +26,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
     // find the cell that atom is in
 
-    icel = get_my_cell(xi, yi, zi, sp) ;
+    icel = get_my_cell(sp, xi, yi, zi) ;
 
     // get the index of the head of chain for the atom in that cell
    
@@ -48,7 +48,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
         xj = x_array[j] ; yj = y_array[j] ; zj = z_array[j] ;
    
-        energy += pair_energy(xi, yi, zi, xj, yj, zj, atom, j, atom_id[atom], atom_id[j], ep) ;
+        energy += pair_energy(ep, xi, yi, zi, xj, yj, zj, atom, j, atom_id[atom], atom_id[j]) ;
     
         j = linked_list[j] ;
 
@@ -58,7 +58,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
 } ; // end of linked_list_energy 
 
-float pair_energy(float xi, float yi, float zi, float xj, float yj, float zj, int atom_i, int atom_j, int i_id, int j_id, energy_parameters ep) { 
+float pair_energy(energy_parameters ep, float xi, float yi, float zi, float xj, float yj, float zj, int atom_i, int atom_j, int i_id, int j_id) { 
 
     /*
         method to calculate energy.  
