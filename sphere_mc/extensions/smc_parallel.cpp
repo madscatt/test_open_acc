@@ -22,6 +22,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     int i ;
     int natoms, number_of_steps, ncell_1d, ncell ;
+    int mapsize = 0 ;
     double temperature, sigma_11, sigma_22, sigma_12 ;
     double epsilon_a_11, epsilon_a_22, epsilon_a_12 ;
     double epsilon_r_11, epsilon_r_22, epsilon_r_12 ;
@@ -31,7 +32,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     const char * dcdfile_name ;
 
     if (!PyArg_ParseTuple(args, "OOffiiiiddddddddddddddddddddds", &array, &pList, &cell_length, &delta, &ncell_1d, &ncell, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &r_cutoff, &max_displacement, &dcdfile_name))
-        return NULL;
+        return NULL; // end of PyArg_ParseTuple
 
     std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
     std::cout << "c: natoms = " <<  natoms<< std::endl ; 
@@ -60,42 +61,43 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     // put energy inputs into an instance of a struct
     //
-    struct energy_parameters parameters ;
-    parameters.natoms = natoms ;
-    parameters.temperature = (float)temperature ;
-    parameters.sigma_11 = (float)sigma_11 ;
-    parameters.sigma_22 = (float)sigma_11 ;
-    parameters.sigma_12 = (float)sigma_12 ;
-    parameters.epsilon_a_11 = (float)epsilon_a_11;
-    parameters.epsilon_a_22 = (float)epsilon_a_22;
-    parameters.epsilon_a_12 = (float)epsilon_a_12;
-    parameters.epsilon_r_11 = (float)epsilon_r_11 ;
-    parameters.epsilon_r_22 = (float)epsilon_r_22 ;
-    parameters.epsilon_r_12 = (float)epsilon_r_12 ;
-    parameters.r_a_11 = (float)r_a_11 ;
-    parameters.r_a_22 = (float)r_a_22 ;
-    parameters.r_a_12 = (float)r_a_12 ;
-    parameters.r_r_11 = (float)r_r_11 ;
-    parameters.r_r_22 = (float)r_r_22 ;
-    parameters.r_r_12 = (float)r_r_12 ;
-    parameters.beta = (float)beta ;
-    parameters.energy = (float)1E99 ;
-    parameters.r_cutoff = (float)r_cutoff ;
-    parameters.max_displacement = (float)max_displacement ;
-    parameters.contrast_1 = (float)contrast_1 ;
-    parameters.contrast_2 = (float)contrast_2 ;
+    struct energy_parameters ep ;
+    ep.natoms = natoms ;
+    ep.temperature = (float)temperature ;
+    ep.sigma_11 = (float)sigma_11 ;
+    ep.sigma_22 = (float)sigma_11 ;
+    ep.sigma_12 = (float)sigma_12 ;
+    ep.epsilon_a_11 = (float)epsilon_a_11;
+    ep.epsilon_a_22 = (float)epsilon_a_22;
+    ep.epsilon_a_12 = (float)epsilon_a_12;
+    ep.epsilon_r_11 = (float)epsilon_r_11 ;
+    ep.epsilon_r_22 = (float)epsilon_r_22 ;
+    ep.epsilon_r_12 = (float)epsilon_r_12 ;
+    ep.r_a_11 = (float)r_a_11 ;
+    ep.r_a_22 = (float)r_a_22 ;
+    ep.r_a_12 = (float)r_a_12 ;
+    ep.r_r_11 = (float)r_r_11 ;
+    ep.r_r_22 = (float)r_r_22 ;
+    ep.r_r_12 = (float)r_r_12 ;
+    ep.beta = (float)beta ;
+    ep.energy = (float)1E99 ;
+    ep.r_cutoff = (float)r_cutoff ;
+    ep.max_displacement = (float)max_displacement ;
+    ep.contrast_1 = (float)contrast_1 ;
+    ep.contrast_2 = (float)contrast_2 ;
 
     // put system inputs into an instance of a struct
     //
     // since some values are const, assignment is done in order
-    struct system_parameters system_parameters  = {\
+    struct system_parameters sp  = {\
         number_of_steps,\
         cell_length,\
         delta,\
         ncell_1d,\
         ncell,\
+        mapsize,\
         dcdfile_name\
-    } ;
+    } ; // end of struct sp
 
     double ***c_array;
 
@@ -111,7 +113,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     if (PyArray_AsCArray(&array, (void ***)&c_array, dims, 3, descr) < 0) {
         PyErr_SetString(PyExc_TypeError, "error converting to c array");
         return NULL;
-    }
+    } // end of if PyArray_AsCarray
 
     // store coordinates in sepearte 1D arrays
     //
@@ -120,7 +122,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
         x_array[i] = (float)c_array[0][i][0] ;
         y_array[i] = (float)c_array[0][i][1] ;
         z_array[i] = (float)c_array[0][i][2] ;
-    }
+    } // end of i loop over natoms 
 
     printf("c : %f \n", c_array[0][0][0]);
     std::cout << "c : x_array[0] = " << x_array[0] << std::endl ;
@@ -135,16 +137,16 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     if (PyArray_AsCArray(&pList, (void *)&atom_id, dims2, 1, descr2) < 0) {
         PyErr_SetString(PyExc_TypeError, "error converting to c array");
         return NULL;
-    }
+    } // end of if PyArrayAsCarray
 
     std::cout << "c: pList[0] = " << atom_id[0] << std::endl ;
     std::cout << "c: pList[1] = " << atom_id[1] << std::endl ;
 
-    smc_core(x_array, y_array, z_array, atom_id, parameters, system_parameters) ;
+    smc_core(x_array, y_array, z_array, atom_id, ep, sp) ;
 
     Py_RETURN_NONE ;
 
-}
+} // end of smc_parallel
 
 static PyMethodDef methods[] = {
 	{ "smc_parallel", smc_parallel, METH_VARARGS },

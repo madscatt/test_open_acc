@@ -23,7 +23,7 @@ struct energy_parameters {
     float max_displacement ;
     float contrast_1 ;
     float contrast_2 ;
-} ;
+} ; // end of struct energy_parameters
 
 struct system_parameters {
 
@@ -32,17 +32,17 @@ struct system_parameters {
     float delta ;
     int ncell_1d ;
     int ncell ;
+    int mapsize ;
     const char * dcdfile_name ;
-} ;
+} ; // end of struct system_parameters
 
 
-
-void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, energy_parameters parameters, system_parameters system_parameters)  ;
+void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, energy_parameters ep, system_parameters sp)  ;
 
 float energy(float *x_array, float *y_array, float *z_array, int *atom_id,  energy_parameters p, int atom) ;
 
-int get_my_cell(float x, float y, float z, system_parameters system_parameters) ;
+int get_my_cell(float x, float y, float z, system_parameters sp) ;
 
-float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  int *linked_list, int *head_of_chain_list, energy_parameters parameters, system_parameters system_parameters, int atom) ; 
+float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  int *linked_list, int *head_of_chain_list, energy_parameters ep, system_parameters sp, int atom) ; 
 
-float pair_energy(float xi, float yi, float zi, float xj, float yj, float zj, int atom_i, int atom_j, int id_i, int id_j, energy_parameters p) ;
+float pair_energy(float xi, float yi, float zi, float xj, float yj, float zj, int atom_i, int atom_j, int id_i, int id_j, energy_parameters ep) ;

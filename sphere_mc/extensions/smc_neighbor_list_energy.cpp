@@ -15,7 +15,7 @@
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
-float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  int *linked_list, int *head_of_chain_list, energy_parameters p, system_parameters system_parameters, int atom){ 
+float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  int *linked_list, int *head_of_chain_list, energy_parameters ep, system_parameters sp, int atom){ 
 
     int i, j, icel ;
     float xi, yi, zi, xj, yj, zj ;
@@ -26,7 +26,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
     // find the cell that atom is in
 
-    icel = get_my_cell(xi, yi, zi, system_parameters) ;
+    icel = get_my_cell(xi, yi, zi, sp) ;
 
     // get the index of the head of chain for the atom in that cell
    
@@ -48,7 +48,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
         xj = x_array[j] ; yj = y_array[j] ; zj = z_array[j] ;
    
-        energy += pair_energy(xi, yi, zi, xj, yj, zj, atom, j, atom_id[atom], atom_id[j], p) ;
+        energy += pair_energy(xi, yi, zi, xj, yj, zj, atom, j, atom_id[atom], atom_id[j], ep) ;
     
         j = linked_list[j] ;
 
@@ -58,7 +58,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
 } ; // end of linked_list_energy 
 
-float pair_energy(float xi, float yi, float zi, float xj, float yj, float zj, int atom_i, int atom_j, int i_id, int j_id, energy_parameters p) { 
+float pair_energy(float xi, float yi, float zi, float xj, float yj, float zj, int atom_i, int atom_j, int i_id, int j_id, energy_parameters ep) { 
 
     /*
         method to calculate energy.  
@@ -77,45 +77,45 @@ float pair_energy(float xi, float yi, float zi, float xj, float yj, float zj, in
         dx2 = dx * dx ; dy2 = dy * dy ; dz2 = dz * dz ;
         r = sqrt(dx2 + dy2 + dz2) ;
 
-        if (r < p.r_cutoff){
+        if (r < ep.r_cutoff){
 
             if(i_id == j_id) {
                 if(i_id == 0){
                 // 11 
-                    if (r < ( p.sigma_11 + p.sigma_11)) {
+                    if (r < ( ep.sigma_11 + ep.sigma_11)) {
                         return overlap ;
                     } // end of overlap check
 
-                    u_long_range_1 = -p.epsilon_a_11 * pow(( p.sigma_11 / p.r_a_11 ),2.0) * exp(-(r/p.r_a_11)) ;
-                    u_long_range_2 =  p.epsilon_r_11 * pow(( p.sigma_11 / p.r_r_11 ),2.0) * exp(-(r/p.r_r_11)) ;
+                    u_long_range_1 = -ep.epsilon_a_11 * pow(( ep.sigma_11 / ep.r_a_11 ),2.0) * exp(-(r/ep.r_a_11)) ;
+                    u_long_range_2 =  ep.epsilon_r_11 * pow(( ep.sigma_11 / ep.r_r_11 ),2.0) * exp(-(r/ep.r_r_11)) ;
 
                 }else {
                 // 22
-                    if (r < ( p.sigma_22 + p.sigma_22)) {
+                    if (r < ( ep.sigma_22 + ep.sigma_22)) {
                         return overlap ;
                     } // end of overlap check
 
-                    u_long_range_1 = -p.epsilon_a_22 * pow(( p.sigma_22 / p.r_a_22 ),2.0) * exp(-(r/p.r_a_22)) ;
-                    u_long_range_2 =  p.epsilon_r_22 * pow(( p.sigma_22 / p.r_r_22 ),2.0) * exp(-(r/p.r_r_22)) ;
+                    u_long_range_1 = -ep.epsilon_a_22 * pow(( ep.sigma_22 / ep.r_a_22 ),2.0) * exp(-(r/ep.r_a_22)) ;
+                    u_long_range_2 =  ep.epsilon_r_22 * pow(( ep.sigma_22 / ep.r_r_22 ),2.0) * exp(-(r/ep.r_r_22)) ;
 
-                } // end of else
+                } // end of if/else
 
             }else {
             //12
-                if (r < ( p.sigma_11 + p.sigma_22)) {
+                if (r < ( ep.sigma_11 + ep.sigma_22)) {
                     return overlap ;
                 } // end of overlap check
 
-                u_long_range_1 = -p.epsilon_a_12 * pow(( p.sigma_12 / p.r_a_12 ),2.0) * exp(-(r/p.r_a_12)) ;
-                u_long_range_2 =  p.epsilon_r_12 * pow(( p.sigma_12 / p.r_r_12 ),2.0) * exp(-(r/p.r_r_12)) ;
+                u_long_range_1 = -ep.epsilon_a_12 * pow(( ep.sigma_12 / ep.r_a_12 ),2.0) * exp(-(r/ep.r_a_12)) ;
+                u_long_range_2 =  ep.epsilon_r_12 * pow(( ep.sigma_12 / ep.r_r_12 ),2.0) * exp(-(r/ep.r_r_12)) ;
             
-            } // end of if(i_id == 0) &  else
+            } // end of if/else (starting with i_id == 0)
            
             u_long_range += u_long_range_1 + u_long_range_2 ; 
-        } // end if (r < p.r_cutoff) 
+        } // end if (r < ep.r_cutoff) 
     } // end of if(atom_j != atom_i)
 
     return u_long_range ;
 
-} ; //end of pair_energy
+} ; // end of pair_energy
 
