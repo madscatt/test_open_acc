@@ -60,7 +60,6 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
 
     // put energy inputs into an instance of a struct
     //
-    //typedef struct energy_parameters parameters ;
     struct energy_parameters parameters ;
     parameters.natoms = natoms ;
     parameters.temperature = temperature ;
@@ -83,6 +82,20 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     parameters.energy = 1E99 ;
     parameters.r_cutoff = r_cutoff ;
     parameters.max_displacement = max_displacement ;
+    parameters.contrast_1 = contrast_1 ;
+    parameters.contrast_2 = contrast_2 ;
+
+    // put system inputs into an instance of a struct
+    //
+    // since some values are const, assignment is done in order
+    struct system_parameters system_parameters  = {\
+        number_of_steps,\
+        cell_length,\
+        delta,\
+        ncell_1d,\
+        ncell,\
+        dcdfile_name\
+    } ;
 
     double ***c_array;
 
@@ -127,7 +140,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     std::cout << "c: pList[0] = " << atom_id[0] << std::endl ;
     std::cout << "c: pList[1] = " << atom_id[1] << std::endl ;
 
-    smc_core(x_array, y_array, z_array, atom_id, dcdfile_name, number_of_steps, ncell, ncell_1d, cell_length, delta, parameters) ;
+    smc_core(x_array, y_array, z_array, atom_id, parameters, system_parameters) ;
 
     Py_RETURN_NONE ;
 

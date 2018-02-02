@@ -15,8 +15,7 @@
     conditions; see http://www.gnu.org/licenses/gpl-3.0.html for details.
 */
 
-// float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  energy_parameters p, int atom) {
-float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  int *linked_list, int *head_of_chain_list, energy_parameters p, float delta, float cell_length, int atom, int ncell_1d) {
+float linked_list_energy(float *x_array, float *y_array, float *z_array, int *atom_id,  int *linked_list, int *head_of_chain_list, energy_parameters p, system_parameters system_parameters, int atom){ 
 
     int i, j, icel ;
     float xi, yi, zi, xj, yj, zj ;
@@ -27,7 +26,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
     // find the cell that atom is in
 
-    icel = get_my_cell(xi, yi, zi, delta, cell_length, ncell_1d) ;
+    icel = get_my_cell(xi, yi, zi, system_parameters) ;
 
     // get the index of the head of chain for the atom in that cell
    

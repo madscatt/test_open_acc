@@ -102,38 +102,38 @@ void  make_neighbor_map(int *map, int mapsize,  int ncell_1d){
 } ; // end of make_neighbor_map
 
 
-int get_my_cell(float x, float y, float z, float delta, float cell_length, int ncell_1d) {
+int get_my_cell(float x, float y, float z, system_parameters system_parameters) {
 
         int icell_x, icell_y, icell_z, icel ;
 
-        icell_x = int((x + (0.5 * delta))/cell_length) ; 
-        icell_y = int((y + (0.5 * delta))/cell_length) ;
-        icell_z = int((z + (0.5 * delta))/cell_length) ;
+        icell_x = int((x + (0.5 * system_parameters.delta))/system_parameters.cell_length) ; 
+        icell_y = int((y + (0.5 * system_parameters.delta))/system_parameters.cell_length) ;
+        icell_z = int((z + (0.5 * system_parameters.delta))/system_parameters.cell_length) ;
 
-        icel = icell_x + (ncell_1d * icell_y) + (ncell_1d * ncell_1d * icell_z) ;
+        icel = icell_x + (system_parameters.ncell_1d * icell_y) + (system_parameters.ncell_1d * system_parameters.ncell_1d * icell_z) ;
 
         return icel ;
 
 } ; // end of get_my_cell
 
 
-void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, float delta, float cell_length, int natoms, int ncell_1d, int ncell) {
+void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array, float *y_array, float *z_array, energy_parameters parameters, system_parameters system_parameters) {
 
     int i, icel ; 
 
-    for (i = 0; i < natoms ; ++i) {
+    for (i = 0; i < parameters.natoms ; ++i) {
         linked_list[i] = -1 ;
 
     } // end of loop over natoms
 
-    for (i = 0; i < ncell ; ++i) {
+    for (i = 0; i < system_parameters.ncell ; ++i) {
         head_of_chain_list[i] = -1 ;
 
     } // end of loop over ncell
 
-    for (i = 0 ; i < natoms ; ++i){
+    for (i = 0 ; i < parameters.natoms ; ++i){
 
-        icel = get_my_cell(x_array[i], y_array[i], z_array[i], delta, cell_length, ncell_1d) ;
+        icel = get_my_cell(x_array[i], y_array[i], z_array[i], system_parameters) ;
         linked_list[i] = head_of_chain_list[icel] ;
         head_of_chain_list[icel] =  i ;
 
@@ -144,7 +144,7 @@ void update_cell_list(int *linked_list, int *head_of_chain_list, float *x_array,
 } // end of update_cell_list
 
 
-int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int atom, energy_parameters parameters, int *linked_list, int *head_of_chain_list, int *map, int ncell, float cell_length, float delta, int ncell_1d) {
+int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, int atom, energy_parameters parameters, int *linked_list, int *head_of_chain_list, int *map, system_parameters system_parameters) {
 
     float x, y, z, r, dx, dy, dz, tx, ty, tz ;
     float norm, final_energy, initial_energy, boltz, delta_energy, ran ; 
@@ -178,14 +178,14 @@ int surface_move(float *x_array, float * y_array, float *z_array, int *atom_id, 
 
     // get initial energy
 
-    initial_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, parameters, delta, cell_length, atom, ncell_1d) ;
+    initial_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, parameters, system_parameters, atom) ;
 
     x_array[atom] = x ;
     y_array[atom] = y ;
     z_array[atom] = z ;
 
     // get final energy
-    final_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, parameters, delta, cell_length, atom, ncell_1d) ;
+    final_energy = linked_list_energy(x_array, y_array, z_array, atom_id,linked_list, head_of_chain_list, parameters, system_parameters, atom) ;
 
     if (final_energy < initial_energy) {
         accepted = true ;
@@ -229,7 +229,7 @@ FILE *open_dcd( const char *dcdfile_name, int natoms) {
 } ; // end of open_dcd
 
  
-void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, const char *dcdfile_name, int number_of_steps, int ncell, int ncell_1d, float cell_length, float delta, energy_parameters parameters) {
+void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, energy_parameters parameters, system_parameters system_parameters) {
 
     int i, j, atom ;
     int mapsize, stepresult ;
@@ -239,27 +239,27 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, cons
     std::uniform_int_distribution<int> random_atom(0,parameters.natoms) ;
 
     int linked_list[parameters.natoms] ;
-    int head_of_chain_list[ncell] ;
+    int head_of_chain_list[system_parameters.ncell] ;
     int number_accepted = 0 ;
 
     FILE * filepointer ;
-    filepointer = open_dcd(dcdfile_name, parameters.natoms) ;
+    filepointer = open_dcd(system_parameters.dcdfile_name, parameters.natoms) ;
 
-    mapsize = int(pow(ncell_1d,3)) * 26 ;
+    mapsize = int(pow(system_parameters.ncell_1d,3)) * 26 ;
     int map[mapsize] ;
 
-    make_neighbor_map(map, mapsize, ncell_1d) ;
+    make_neighbor_map(map, mapsize, system_parameters.ncell_1d) ;
 
-    for(i = 0 ; i < number_of_steps ; ++i) {
+    for(i = 0 ; i < system_parameters.number_of_steps ; ++i) {
         std::cout << i << " " << std::flush ;   
 
         for(j = 0 ; j < parameters.natoms ; ++j){ 
 
             atom  = random_atom(mt) ;
 
-            update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, delta, cell_length, parameters.natoms, ncell_1d, ncell) ;
+            update_cell_list(linked_list, head_of_chain_list, x_array, y_array, z_array, parameters, system_parameters) ;
 
-            number_accepted += surface_move(x_array, y_array, z_array, atom_id, atom, parameters, linked_list, head_of_chain_list, map, ncell, cell_length, delta, ncell_1d) ;
+            number_accepted += surface_move(x_array, y_array, z_array, atom_id, atom, parameters, linked_list, head_of_chain_list, map, system_parameters) ;
         }
 
         stepresult = write_dcdstep(filepointer, parameters.natoms, x_array, y_array, z_array, i) ;
