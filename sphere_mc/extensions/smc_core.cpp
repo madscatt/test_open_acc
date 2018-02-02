@@ -106,9 +106,9 @@ int get_my_cell(system_parameters sp, float x, float y, float z) {
 
         int icell_x, icell_y, icell_z, icel ;
 
-        icell_x = int((x + (0.5 * sp.delta))/sp.cell_length) ; 
-        icell_y = int((y + (0.5 * sp.delta))/sp.cell_length) ;
-        icell_z = int((z + (0.5 * sp.delta))/sp.cell_length) ;
+        icell_x = int((x + (0.5 * sp.box_length))/sp.cell_length) ; 
+        icell_y = int((y + (0.5 * sp.box_length))/sp.cell_length) ;
+        icell_z = int((z + (0.5 * sp.box_length))/sp.cell_length) ;
 
         icel = icell_x + (sp.ncell_1d * icell_y) + (sp.ncell_1d * sp.ncell_1d * icell_z) ;
 
@@ -236,7 +236,7 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, ener
 
     std::random_device rd ;
     std::mt19937 mt(rd()) ;
-    std::uniform_int_distribution<int> random_atom(0,ep.natoms) ;
+    std::uniform_int_distribution<int> random_atom(0,ep.natoms - 1) ;
 
     int linked_list[ep.natoms] ;
     int head_of_chain_list[sp.ncell] ;
@@ -263,18 +263,18 @@ void smc_core(float *x_array, float *y_array, float *z_array, int *atom_id, ener
         } // end of j loop over ep.natoms
 
         step_result = write_dcdstep(filepointer, ep.natoms, x_array, y_array, z_array, i) ;
-
-        if(step_result != 0){
-            std::cout << "error writing dcd frame: " << sp.dcdfile_name << "step = " << i << std::endl ;
-        } // end if step_result
+        
+       // if(step_result != 1){
+        //    std::cout << "error writing dcd frame: " << sp.dcdfile_name << "step = " << i << std::endl ;
+       // } // end if step_result
 
     } // end of i loop over sp.number_of_steps
 
     step_result = close_dcd_write(filepointer) ;
 
-    if(step_result != 0){
-        std::cout << "error closing dcd file: " << sp.dcdfile_name << std::endl ;
-    } // end if step_result
+    //if(step_result != 1){
+     //   std::cout << "error closing dcd file: " << sp.dcdfile_name << std::endl ;
+    //} // end if step_result
 
     return ;
 

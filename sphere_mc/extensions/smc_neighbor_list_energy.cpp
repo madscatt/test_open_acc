@@ -21,6 +21,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
     float xi, yi, zi, xj, yj, zj ;
 
     float energy = 0.0 ;
+    float overlap = 1E99 ;
 
     xi = x_array[atom] ; yi = y_array[atom] ; zi = z_array[atom] ;
 
@@ -35,8 +36,11 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
     // return if head of chain is exhausted ... not sure this should happen 
     if(i < 0){
         std::cout << "for atom = " << atom << "hoc = " << i << "not sure this should happen" << std::endl ;
+        std::cout << "x[" << atom << "] = " << xi << std::endl ;
+        std::cout << "y[" << atom << "] = " << yi << std::endl ;
+        std::cout << "z[" << atom << "] = " << zi << std::endl ;
         std::cout << "for atom = " << atom << "energy = " << energy << "not sure this should happen" << std::endl ;
-        return energy ;
+        return overlap ; // a hack
         
     } ; // end of if i < 0
 
@@ -54,7 +58,7 @@ float linked_list_energy(float *x_array, float *y_array, float *z_array, int *at
 
     } ; // end of while j < 0
 
-    return energy ;
+    return overlap ;
 
 } ; // end of linked_list_energy 
 

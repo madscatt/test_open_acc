@@ -29,7 +29,7 @@ struct system_parameters {
 
     const int number_of_steps ;
     float cell_length ; 
-    float delta ;
+    float box_length ;
     int ncell_1d ;
     int ncell ;
     int mapsize ;

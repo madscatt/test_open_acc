@@ -116,10 +116,10 @@ int write_dcdheader(FILE * fd, char *filename, int N, int NSET,
 int write_dcdstep(FILE * fd, int N, float *X, float *Y, float *Z, int curframe)
 {
       int out_integer;
-      int curstep ;
+/*      int curstep ;
 
       curstep=curframe ;
-
+*/
       out_integer = N*4;
       WRITE(fd, (char *) &out_integer, sizeof(int));
       WRITE(fd, (char *) X, out_integer);

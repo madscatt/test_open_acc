@@ -155,20 +155,21 @@ def set_up_cells(mol, r_cutoff, smidge ):
 
     dx = x_max - x_min ; dy = y_max - y_min ; dz = z_max - z_min
 
-    delta = max([dx,dy,dz])
+    box_length = max([dx,dy,dz])
 
-    cell_length = delta/(int(delta/r_cutoff))
+    cell_length = box_length/(int(box_length/r_cutoff))
 
     print ; print 'dx = ', dx, ' : dy = ', dy, ' : dz = ', dz
 
     print 'r_cutoff = ', r_cutoff
     print 'cell_length = ', cell_length
+    print 'box_length = ', box_length
 
-    ncell_1d = int(math.ceil(delta/cell_length)) ; print 'ncell_1d = ', ncell_1d
+    ncell_1d = int(math.ceil(box_length/cell_length)) ; print 'ncell_1d = ', ncell_1d
 
     ncell = int(math.pow(ncell_1d, 3))
 
-    return ncell_1d, ncell, x_min, y_min, z_min, x_max, y_max, z_max, delta, cell_length
+    return ncell_1d, ncell, x_min, y_min, z_min, x_max, y_max, z_max, box_length, cell_length
 
 def get_cell_list(mol, r_cutoff, smidge, **kwargs):
 
@@ -177,7 +178,7 @@ def get_cell_list(mol, r_cutoff, smidge, **kwargs):
     if 'debug' in kwargs:
         debug = True
 
-    ncell_1d, ncell, x_min, y_min, z_min, x_max, y_max, z_max, delta, cell_length = set_up_cells(mol, r_cutoff,  smidge)
+    ncell_1d, ncell, x_min, y_min, z_min, x_max, y_max, z_max, box_length, cell_length = set_up_cells(mol, r_cutoff,  smidge)
 
     #    ncell_1d = 5 ; # use this number of cells to validate return values
  
@@ -203,25 +204,25 @@ def get_cell_list(mol, r_cutoff, smidge, **kwargs):
 
         # for testing only
 
-        if atom_number == 0:
-            atom[0] = -(delta/2.0) + 0.1
-            atom[1] = -(delta/2.0) + 0.1
-            atom[2] = -(delta/2.0) + 0.1
-            atom[0] = (delta/2.0) - 0.1 
-            atom[1] = (delta/2.0)  - 0.1
-            atom[2] = (delta/2.0)  - 0.1
+#        if atom_number == 0:
+#            atom[0] = -(box_length/2.0) + 0.1
+#            atom[1] = -(box_length/2.0) + 0.1
+#            atom[2] = -(box_length/2.0) + 0.1
+#            atom[0] = (box_length/2.0) - 0.1 
+#            atom[1] = (box_length/2.0)  - 0.1
+#            atom[2] = (box_length/2.0)  - 0.1
 
         # allen & tildsley style (assumes cell length = 1)
 
-        #icell_x = int((atom[0] + (0.5 * delta)) * 1.0/ncell_1d)
-        #icell_y = int((atom[1] + (0.5 * delta)) * 1.0/ncell_1d)
-        #icell_z = int((atom[2] + (0.5 * delta)) * 1.0/ncell_1d)
+        #icell_x = int((atom[0] + (0.5 * box_length)) * 1.0/ncell_1d)
+        #icell_y = int((atom[1] + (0.5 * box_length)) * 1.0/ncell_1d)
+        #icell_z = int((atom[2] + (0.5 * box_length)) * 1.0/ncell_1d)
 
         # frenkel & smit style
 
-        icell_x = int((atom[0] + (0.5 * delta))/cell_length) 
-        icell_y = int((atom[1] + (0.5 * delta))/cell_length) 
-        icell_z = int((atom[2] + (0.5 * delta))/cell_length) 
+        icell_x = int((atom[0] + (0.5 * box_length))/cell_length) 
+        icell_y = int((atom[1] + (0.5 * box_length))/cell_length) 
+        icell_z = int((atom[2] + (0.5 * box_length))/cell_length) 
 
         icel = icell_x + (ncell_1d * icell_y) + (ncell_1d * ncell_1d * icell_z)
 
@@ -281,7 +282,7 @@ def get_cell_list(mol, r_cutoff, smidge, **kwargs):
                 tmol.write_pdb(this_pdb,0,'w')
                 cell_number += 1 
 
-    return map, ll, hoc, cell_length, delta, ncell_1d, ncell
+    return map, ll, hoc, cell_length, box_length, ncell_1d, ncell
 
 
 if __name__ == "__main__":
@@ -294,6 +295,6 @@ if __name__ == "__main__":
     mol = sasmol.SasMol(0)
     mol.read_pdb(pdbfile)
 
-    map, ll, hoc, cell_length, delta, ncell_1d, ncell = get_cell_list(mol, r_cutoff, smidge, debug=True)
+    map, ll, hoc, cell_length, box_length, ncell_1d, ncell = get_cell_list(mol, r_cutoff, smidge, debug=True)
 
 

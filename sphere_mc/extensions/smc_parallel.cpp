@@ -28,10 +28,10 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     double epsilon_r_11, epsilon_r_22, epsilon_r_12 ;
     double r_a_11, r_a_22, r_a_12, r_r_11, r_r_22, r_r_12 ; 
     double beta, contrast_1, contrast_2, r_cutoff, max_displacement;
-    float cell_length, delta ;
+    float cell_length, box_length ;
     const char * dcdfile_name ;
 
-    if (!PyArg_ParseTuple(args, "OOffiiiiddddddddddddddddddddds", &array, &pList, &cell_length, &delta, &ncell_1d, &ncell, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &r_cutoff, &max_displacement, &dcdfile_name))
+    if (!PyArg_ParseTuple(args, "OOffiiiiddddddddddddddddddddds", &array, &pList, &cell_length, &box_length, &ncell_1d, &ncell, &number_of_steps, &natoms, &temperature, &sigma_11, &sigma_22, &sigma_12,  &epsilon_a_11, &epsilon_a_22, &epsilon_a_12, &epsilon_r_11, &epsilon_r_22, &epsilon_r_12, &r_a_11, &r_a_22, &r_a_12, &r_r_11, &r_r_22, &r_r_12, &beta, &contrast_1, &contrast_2, &r_cutoff, &max_displacement, &dcdfile_name))
         return NULL; // end of PyArg_ParseTuple
 
     std::cout << "c: number_of_steps = " << number_of_steps << std::endl ; 
@@ -92,7 +92,7 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     struct system_parameters sp  = {\
         number_of_steps,\
         cell_length,\
-        delta,\
+        box_length,\
         ncell_1d,\
         ncell,\
         mapsize,\

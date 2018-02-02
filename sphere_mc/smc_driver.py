@@ -15,7 +15,7 @@ class parameters():
 
     def __init__(self):
 
-        self.number_of_steps = 3
+        self.number_of_steps = 100 
         #self.temperature = 1.0
         self.temperature = 0.3
         self.rho = 0.65
