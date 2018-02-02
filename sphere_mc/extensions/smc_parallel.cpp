@@ -62,28 +62,28 @@ PyObject *smc_parallel(PyObject *self, PyObject *args){
     //
     struct energy_parameters parameters ;
     parameters.natoms = natoms ;
-    parameters.temperature = temperature ;
-    parameters.sigma_11 = sigma_11 ;
-    parameters.sigma_22 = sigma_11 ;
-    parameters.sigma_12 = sigma_12 ;
-    parameters.epsilon_a_11 = epsilon_a_11;
-    parameters.epsilon_a_22 = epsilon_a_22;
-    parameters.epsilon_a_12 = epsilon_a_12;
-    parameters.epsilon_r_11 = epsilon_r_11 ;
-    parameters.epsilon_r_22 = epsilon_r_22 ;
-    parameters.epsilon_r_12 = epsilon_r_12 ;
-    parameters.r_a_11 = r_a_11 ;
-    parameters.r_a_22 = r_a_22 ;
-    parameters.r_a_12 = r_a_12 ;
-    parameters.r_r_11 = r_r_11 ;
-    parameters.r_r_22 = r_r_22 ;
-    parameters.r_r_12 = r_r_12 ;
-    parameters.beta = beta ;
-    parameters.energy = 1E99 ;
-    parameters.r_cutoff = r_cutoff ;
-    parameters.max_displacement = max_displacement ;
-    parameters.contrast_1 = contrast_1 ;
-    parameters.contrast_2 = contrast_2 ;
+    parameters.temperature = (float)temperature ;
+    parameters.sigma_11 = (float)sigma_11 ;
+    parameters.sigma_22 = (float)sigma_11 ;
+    parameters.sigma_12 = (float)sigma_12 ;
+    parameters.epsilon_a_11 = (float)epsilon_a_11;
+    parameters.epsilon_a_22 = (float)epsilon_a_22;
+    parameters.epsilon_a_12 = (float)epsilon_a_12;
+    parameters.epsilon_r_11 = (float)epsilon_r_11 ;
+    parameters.epsilon_r_22 = (float)epsilon_r_22 ;
+    parameters.epsilon_r_12 = (float)epsilon_r_12 ;
+    parameters.r_a_11 = (float)r_a_11 ;
+    parameters.r_a_22 = (float)r_a_22 ;
+    parameters.r_a_12 = (float)r_a_12 ;
+    parameters.r_r_11 = (float)r_r_11 ;
+    parameters.r_r_22 = (float)r_r_22 ;
+    parameters.r_r_12 = (float)r_r_12 ;
+    parameters.beta = (float)beta ;
+    parameters.energy = (float)1E99 ;
+    parameters.r_cutoff = (float)r_cutoff ;
+    parameters.max_displacement = (float)max_displacement ;
+    parameters.contrast_1 = (float)contrast_1 ;
+    parameters.contrast_2 = (float)contrast_2 ;
 
     // put system inputs into an instance of a struct
     //

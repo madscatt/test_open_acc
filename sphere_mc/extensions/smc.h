@@ -1,6 +1,6 @@
 
 struct energy_parameters {
-    int  natoms ;
+    int natoms ;
     float temperature ;
     float sigma_11  ;
     float sigma_22 ;
@@ -34,7 +34,6 @@ struct system_parameters {
     int ncell ;
     const char * dcdfile_name ;
 } ;
-
 
 
 
